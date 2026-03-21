@@ -47,7 +47,7 @@ export const skillPacks: SkillPack[] = [
     icon: "⚗️",
     label: "Materials Science",
     skillCount: 6,
-    status: "planned",
+    status: "available",
     agents: ["Dravya-Agent"],
   },
   {
@@ -55,7 +55,7 @@ export const skillPacks: SkillPack[] = [
     icon: "🔋",
     label: "Cell & Module",
     skillCount: 8,
-    status: "planned",
+    status: "available",
     agents: ["Kosha-Agent", "Shakti-Agent"],
   },
   {
@@ -134,23 +134,23 @@ export const PACK_DOMAIN_MAP: Record<string, string> = Object.fromEntries(
 // ---------------------------------------------------------------------------
 
 export const skills: Skill[] = [
-  // pv-materials (all planned)
-  { id: "silicon-characterization", name: "silicon-characterization", description: "Wafer quality, resistivity, lifetime measurements", pack: "pv-materials", packLabel: "Materials Science", status: "planned", tags: ["silicon", "wafer", "resistivity", "lifetime"], agent: "Dravya-Agent" },
-  { id: "perovskite-modeler", name: "perovskite-modeler", description: "Composition modeling, bandgap tuning, stability prediction", pack: "pv-materials", packLabel: "Materials Science", status: "planned", tags: ["perovskite", "bandgap", "stability", "composition"], agent: "Dravya-Agent" },
-  { id: "xrd-analysis", name: "xrd-analysis", description: "X-ray diffraction pattern analysis and phase identification", pack: "pv-materials", packLabel: "Materials Science", status: "planned", tags: ["xrd", "diffraction", "phase", "crystallography"], agent: "Dravya-Agent" },
-  { id: "sem-interpretation", name: "sem-interpretation", description: "SEM/TEM image analysis for microstructure characterization", pack: "pv-materials", packLabel: "Materials Science", status: "planned", tags: ["sem", "tem", "microstructure", "imaging"], agent: "Dravya-Agent" },
-  { id: "el-imaging", name: "el-imaging", description: "Electroluminescence image defect detection and classification", pack: "pv-materials", packLabel: "Materials Science", status: "planned", tags: ["el", "electroluminescence", "defect", "imaging"], agent: "Dravya-Agent" },
-  { id: "defect-classifier", name: "defect-classifier", description: "Material defect classification — LeTID, PID, UV degradation", pack: "pv-materials", packLabel: "Materials Science", status: "planned", tags: ["defect", "letid", "pid", "uv", "classification"], agent: "Dravya-Agent" },
+  // pv-materials (all available)
+  { id: "silicon-characterization", name: "silicon-characterization", description: "Wafer quality, resistivity, lifetime measurements", pack: "pv-materials", packLabel: "Materials Science", status: "available", tags: ["silicon", "wafer", "resistivity", "lifetime"], agent: "Dravya-Agent" },
+  { id: "perovskite-modeler", name: "perovskite-modeler", description: "Composition modeling, bandgap tuning, stability prediction", pack: "pv-materials", packLabel: "Materials Science", status: "available", tags: ["perovskite", "bandgap", "stability", "composition"], agent: "Dravya-Agent" },
+  { id: "xrd-analysis", name: "xrd-analysis", description: "X-ray diffraction pattern analysis and phase identification", pack: "pv-materials", packLabel: "Materials Science", status: "available", tags: ["xrd", "diffraction", "phase", "crystallography"], agent: "Dravya-Agent" },
+  { id: "sem-interpretation", name: "sem-interpretation", description: "SEM/TEM image analysis for microstructure characterization", pack: "pv-materials", packLabel: "Materials Science", status: "available", tags: ["sem", "tem", "microstructure", "imaging"], agent: "Dravya-Agent" },
+  { id: "el-imaging", name: "el-imaging", description: "Electroluminescence image defect detection and classification", pack: "pv-materials", packLabel: "Materials Science", status: "available", tags: ["el", "electroluminescence", "defect", "imaging"], agent: "Dravya-Agent" },
+  { id: "defect-classifier", name: "defect-classifier", description: "Material defect classification — LeTID, PID, UV degradation", pack: "pv-materials", packLabel: "Materials Science", status: "available", tags: ["defect", "letid", "pid", "uv", "classification"], agent: "Dravya-Agent" },
 
-  // pv-cell-module (all planned)
-  { id: "bom-generator", name: "bom-generator", description: "Bill of Materials creation and validation for PV modules", pack: "pv-cell-module", packLabel: "Cell & Module", status: "planned", tags: ["bom", "materials", "module", "components"], agent: "Kosha-Agent" },
-  { id: "ctm-calculator", name: "ctm-calculator", description: "Cell-to-Module power loss/gain analysis", pack: "pv-cell-module", packLabel: "Cell & Module", status: "planned", tags: ["ctm", "cell", "module", "power-loss"], agent: "Kosha-Agent" },
-  { id: "iv-curve-modeler", name: "iv-curve-modeler", description: "I-V curve simulation and parameter extraction", pack: "pv-cell-module", packLabel: "Cell & Module", status: "planned", tags: ["iv-curve", "simulation", "parameters", "cell"], agent: "Shakti-Agent" },
-  { id: "cell-efficiency", name: "cell-efficiency", description: "Cell efficiency analysis at STC and NOCT conditions", pack: "pv-cell-module", packLabel: "Cell & Module", status: "planned", tags: ["efficiency", "stc", "noct", "cell"], agent: "Shakti-Agent" },
-  { id: "diode-model", name: "diode-model", description: "Single/double diode model parameter fitting", pack: "pv-cell-module", packLabel: "Cell & Module", status: "planned", tags: ["diode", "model", "parameters", "equivalent-circuit"], agent: "Shakti-Agent" },
-  { id: "temperature-coefficients", name: "temperature-coefficients", description: "Temperature coefficient analysis and modeling", pack: "pv-cell-module", packLabel: "Cell & Module", status: "planned", tags: ["temperature", "coefficient", "thermal", "modeling"], agent: "Shakti-Agent" },
-  { id: "module-construction", name: "module-construction", description: "Module layup design and material selection", pack: "pv-cell-module", packLabel: "Cell & Module", status: "planned", tags: ["module", "layup", "encapsulant", "backsheet", "glass"], agent: "Kosha-Agent" },
-  { id: "lamination-params", name: "lamination-params", description: "Lamination process parameter optimization", pack: "pv-cell-module", packLabel: "Cell & Module", status: "planned", tags: ["lamination", "process", "encapsulant", "manufacturing"], agent: "Kosha-Agent" },
+  // pv-cell-module (all available)
+  { id: "bom-generator", name: "bom-generator", description: "Bill of Materials creation and validation for PV modules", pack: "pv-cell-module", packLabel: "Cell & Module", status: "available", tags: ["bom", "materials", "module", "components"], agent: "Kosha-Agent" },
+  { id: "ctm-calculator", name: "ctm-calculator", description: "Cell-to-Module power loss/gain analysis", pack: "pv-cell-module", packLabel: "Cell & Module", status: "available", tags: ["ctm", "cell", "module", "power-loss"], agent: "Kosha-Agent" },
+  { id: "iv-curve-modeler", name: "iv-curve-modeler", description: "I-V curve simulation and parameter extraction", pack: "pv-cell-module", packLabel: "Cell & Module", status: "available", tags: ["iv-curve", "simulation", "parameters", "cell"], agent: "Shakti-Agent" },
+  { id: "cell-efficiency", name: "cell-efficiency", description: "Cell efficiency analysis at STC and NOCT conditions", pack: "pv-cell-module", packLabel: "Cell & Module", status: "available", tags: ["efficiency", "stc", "noct", "cell"], agent: "Shakti-Agent" },
+  { id: "diode-model", name: "diode-model", description: "Single/double diode model parameter fitting", pack: "pv-cell-module", packLabel: "Cell & Module", status: "available", tags: ["diode", "model", "parameters", "equivalent-circuit"], agent: "Shakti-Agent" },
+  { id: "temperature-coefficients", name: "temperature-coefficients", description: "Temperature coefficient analysis and modeling", pack: "pv-cell-module", packLabel: "Cell & Module", status: "available", tags: ["temperature", "coefficient", "thermal", "modeling"], agent: "Shakti-Agent" },
+  { id: "module-construction", name: "module-construction", description: "Module layup design and material selection", pack: "pv-cell-module", packLabel: "Cell & Module", status: "available", tags: ["module", "layup", "encapsulant", "backsheet", "glass"], agent: "Kosha-Agent" },
+  { id: "lamination-params", name: "lamination-params", description: "Lamination process parameter optimization", pack: "pv-cell-module", packLabel: "Cell & Module", status: "available", tags: ["lamination", "process", "encapsulant", "manufacturing"], agent: "Kosha-Agent" },
 
   // pv-testing (all available)
   { id: "iec-61215-protocol", name: "iec-61215-protocol", description: "IEC 61215 design qualification test protocols — Groups A–D, MQT 01–21", pack: "pv-testing", packLabel: "Testing & Compliance", status: "available", tags: ["iec-61215", "qualification", "protocol", "testing"], agent: "Pariksha-Agent" },

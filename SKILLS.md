@@ -6,12 +6,12 @@
 
 | Pack | Domain | Skills | Status | Agent(s) |
 |------|--------|--------|--------|----------|
-| `pv-materials` | Materials Science | 6 | Planning | Dravya-Agent |
-| `pv-cell-module` | Cell & Module | 8 | Planning | Kosha-Agent, Shakti-Agent |
+| `pv-materials` | Materials Science | 6 | **Available** | Dravya-Agent |
+| `pv-cell-module` | Cell & Module | 8 | **Available** | Kosha-Agent, Shakti-Agent |
 | `pv-testing` | Testing & Compliance | 7 | **Available** | Pariksha-Agent |
 | `pv-reliability` | Reliability & Quality | 6 | **Available** | Nityata-Agent |
-| `pv-analytics` | Statistical Analysis | 5 | Planning | Cross-cutting |
-| `pv-finance` | Finance & Economics | 6 | Planning | Nivesha-Agent |
+| `pv-analytics` | Statistical Analysis | 5 | **Available** | Cross-cutting |
+| `pv-finance` | Finance & Economics | 6 | **Available** | Nivesha-Agent |
 | `pv-energy` | Energy & Weather | 10 | **Available** | Megha-Agent, Phala-Agent |
 | `pv-plant-design` | Plant Design | 7 | **Available** | Vinyasa-Agent |
 | `pv-power-systems` | Power Systems | 7 | Planning | Vidyut-Agent |
@@ -31,12 +31,12 @@ Materials science skills for PV research and manufacturing.
 
 | Skill | Description | Status |
 |-------|-------------|--------|
-| `silicon-characterization` | Wafer quality, resistivity, lifetime measurements | Planned |
-| `perovskite-modeler` | Composition modeling, bandgap tuning, stability | Planned |
-| `xrd-analysis` | X-ray diffraction pattern analysis and phase identification | Planned |
-| `sem-interpretation` | SEM/TEM image analysis for microstructure | Planned |
-| `el-imaging` | Electroluminescence image defect detection | Planned |
-| `defect-classifier` | Material defect classification (LeTID, PID, UV) | Planned |
+| `silicon-characterization` | Wafer quality, resistivity, lifetime measurements | **Available** |
+| `perovskite-modeler` | Composition modeling, bandgap tuning, stability | **Available** |
+| `xrd-analysis` | X-ray diffraction pattern analysis and phase identification | **Available** |
+| `sem-interpretation` | SEM/TEM image analysis for microstructure | **Available** |
+| `el-imaging` | Electroluminescence image defect detection | **Available** |
+| `defect-classifier` | Material defect classification (LeTID, PID, UV) | **Available** |
 
 ---
 
@@ -46,14 +46,14 @@ Cell design, module construction, and BoM management.
 
 | Skill | Description | Status |
 |-------|-------------|--------|
-| `bom-generator` | Bill of Materials creation and validation | Planned |
-| `ctm-calculator` | Cell-to-Module power loss/gain analysis | Planned |
-| `iv-curve-modeler` | I-V curve simulation and parameter extraction | Planned |
-| `cell-efficiency` | Cell efficiency analysis at STC/NOCT conditions | Planned |
-| `diode-model` | Single/double diode model parameter fitting | Planned |
-| `temperature-coefficients` | Temperature coefficient analysis and modeling | Planned |
-| `module-construction` | Module layup design and material selection | Planned |
-| `lamination-params` | Lamination process parameter optimization | Planned |
+| `bom-generator` | Bill of Materials creation and validation | **Available** |
+| `ctm-calculator` | Cell-to-Module power loss/gain analysis | **Available** |
+| `iv-curve-modeler` | I-V curve simulation and parameter extraction | **Available** |
+| `cell-efficiency` | Cell efficiency analysis at STC/NOCT conditions | **Available** |
+| `diode-model` | Single/double diode model parameter fitting | **Available** |
+| `temperature-coefficients` | Temperature coefficient analysis and modeling | **Available** |
+| `module-construction` | Module layup design and material selection | **Available** |
+| `lamination-params` | Lamination process parameter optimization | **Available** |
 
 ---
 
@@ -84,7 +84,7 @@ Reliability engineering, failure analysis, and quality management.
 | `degradation-modeling` | LID, LeTID, PID mechanisms, annual degradation rates, lifetime prediction | **Available** |
 | `root-cause-analysis` | 5-Why, fishbone diagram, fault tree analysis for PV field failures | **Available** |
 | `cn-rn-documentation` | Change Notice / Release Note generation, revision tracking, ECO workflow | **Available** |
-| `warranty-analysis` | Warranty reserve and claim rate calculation | Planned |
+| `warranty-analysis` | Warranty reserve and claim rate calculation | **Available** |
 
 ---
 
@@ -94,11 +94,11 @@ Cross-cutting statistical and data analysis skills.
 
 | Skill | Description | Status |
 |-------|-------------|--------|
-| `anova-analysis` | Analysis of Variance for PV experiments | Planned |
-| `regression-modeler` | Linear/nonlinear regression for PV data | Planned |
-| `spc-charts` | Statistical Process Control charts | Planned |
-| `monte-carlo` | Monte Carlo simulation for uncertainty | Planned |
-| `gum-uncertainty` | GUM framework uncertainty analysis | Planned |
+| `anova-analysis` | Analysis of Variance for PV experiments | **Available** |
+| `regression-modeler` | Linear/nonlinear regression for PV data | **Available** |
+| `spc-charts` | Statistical Process Control charts | **Available** |
+| `monte-carlo` | Monte Carlo simulation for uncertainty | **Available** |
+| `gum-uncertainty` | GUM framework uncertainty analysis | **Available** |
 
 ---
 
@@ -108,12 +108,12 @@ Financial modeling and policy compliance.
 
 | Skill | Description | Status |
 |-------|-------------|--------|
-| `lcoe-calculator` | Levelized Cost of Energy calculation | Planned |
-| `financial-modeler` | IRR, NPV, payback period analysis | Planned |
-| `carbon-credits` | Carbon credit and REC calculations | Planned |
-| `policy-compliance` | ALMM, DCR, MNRE guideline compliance | Planned |
-| `bankability-assessment` | Project bankability evaluation | Planned |
-| `ppa-modeler` | Power Purchase Agreement financial modeling | Planned |
+| `lcoe-calculator` | Levelized Cost of Energy calculation | **Available** |
+| `financial-modeler` | IRR, NPV, payback period analysis | **Available** |
+| `carbon-credits` | Carbon credit and REC calculations | **Available** |
+| `policy-compliance` | ALMM, DCR, MNRE guideline compliance | **Available** |
+| `bankability-assessment` | Project bankability evaluation | **Available** |
+| `ppa-modeler` | Power Purchase Agreement financial modeling | **Available** |
 
 ---
 

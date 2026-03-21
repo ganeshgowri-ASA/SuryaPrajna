@@ -218,7 +218,7 @@ graph TD
 ## Grantha-Agent (Documentation & Compliance)
 
 **Sanskrit:** _Grantha_ = book, document, treatise
-**Domain:** Cross-cutting (all packs)
+**Domain:** Cross-cutting (all packs), `pv-scientific-writing`
 
 **Capabilities:**
 - Technical report generation
@@ -229,8 +229,12 @@ graph TD
 - LCA (Life Cycle Assessment) reports
 - Quality management documentation
 - Regulatory filing preparation
+- Scientific manuscript authoring with publisher-specific formatting (Wiley, Elsevier, IEEE, Springer, Nature, SPIE)
+- Systematic literature review with Semantic Scholar, Perplexity AI, Zotero integration
+- Publication-quality figure generation (I-V curves, EQE, loss trees, EL/IR analysis)
+- Multi-section report compilation with cross-referencing and multi-format export
 
-**Key skills:** `report-generator`, `datasheet-creator`, `compliance-docs`, `lca-report`, `eia-report`
+**Key skills:** `report-generator`, `datasheet-creator`, `compliance-docs`, `lca-report`, `eia-report`, `manuscript-writer`, `literature-review`, `figure-generator`, `report-compiler`
 
 ---
 

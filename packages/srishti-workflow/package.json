@@ -1,0 +1,32 @@
+{
+  "name": "@suryaprajna/srishti-workflow",
+  "version": "0.1.0",
+  "description": "Workflow orchestration engine for SuryaPrajna PV domain agents. Supports intent routing, multi-step workflows, wave-based task decomposition, and session state management.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "solar",
+    "pv",
+    "workflow",
+    "orchestration",
+    "agents"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "@types/node": "^20.11.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "files": [
+    "dist",
+    "src"
+  ]
+}

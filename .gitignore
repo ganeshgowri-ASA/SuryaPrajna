@@ -12,6 +12,7 @@ eggs/
 .Python
 develop-eggs/
 lib/
+!apps/*/lib/
 !apps/*/src/lib/
 lib64/
 parts/

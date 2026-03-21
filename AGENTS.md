@@ -99,7 +99,7 @@ graph TD
 - NABL/BIS compliance checklists
 - UV preconditioning and humidity-freeze protocols
 
-**Key skills:** `iec-61215-protocol`, `iec-61730-protocol`, `flash-test-analysis`, `field-testing`, `nabl-compliance`
+**Key skills:** `iec-61215-protocol`, `iec-61730-safety`, `thermal-cycling`, `damp-heat-testing`, `uv-preconditioning`, `mechanical-load`, `pv-module-flash-testing`
 
 ---
 
@@ -117,7 +117,7 @@ graph TD
 - Degradation rate modeling
 - Warranty reserve calculations
 
-**Key skills:** `fmea-generator`, `weibull-analysis`, `rca-facilitator`, `cn-rn-automation`, `degradation-modeler`
+**Key skills:** `fmea-analysis`, `weibull-reliability`, `degradation-modeling`, `root-cause-analysis`, `cn-rn-documentation`, `warranty-analysis`
 
 ---
 

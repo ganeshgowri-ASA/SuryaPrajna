@@ -8,8 +8,8 @@
 |------|--------|--------|--------|----------|
 | `pv-materials` | Materials Science | 6 | Planning | Dravya-Agent |
 | `pv-cell-module` | Cell & Module | 8 | Planning | Kosha-Agent, Shakti-Agent |
-| `pv-testing` | Testing & Compliance | 7 | **In Progress** | Pariksha-Agent |
-| `pv-reliability` | Reliability & Quality | 6 | Planning | Nityata-Agent |
+| `pv-testing` | Testing & Compliance | 7 | **Available** | Pariksha-Agent |
+| `pv-reliability` | Reliability & Quality | 6 | **Available** | Nityata-Agent |
 | `pv-analytics` | Statistical Analysis | 5 | Planning | Cross-cutting |
 | `pv-finance` | Finance & Economics | 6 | Planning | Nivesha-Agent |
 | `pv-energy` | Energy & Weather | 10 | **In Progress** | Megha-Agent, Phala-Agent |
@@ -60,12 +60,12 @@ Testing protocols, lab workflows, and field measurements.
 | Skill | Description | Status |
 |-------|-------------|--------|
 | `iec-61215-protocol` | IEC 61215 design qualification test protocols | **Available** |
-| `iec-61730-protocol` | IEC 61730 safety qualification test protocols | Planned |
-| `flash-test-analysis` | Flash test data analysis and STC translation | Planned |
-| `field-testing` | Field PR ratio, soiling, degradation measurement | Planned |
-| `thermal-cycling` | Thermal cycling test evaluation (TC200/TC400/TC600) | Planned |
-| `damp-heat` | Damp heat test evaluation (DH1000/DH2000/DH3000) | Planned |
-| `nabl-compliance` | NABL/BIS laboratory compliance checklists | Planned |
+| `iec-61730-safety` | IEC 61730 safety qualification testing — insulation, ground continuity, dielectric withstand | **Available** |
+| `thermal-cycling` | TC200/TC600 thermal stress test protocol, solder joint fatigue analysis | **Available** |
+| `damp-heat-testing` | DH1000/DH2000/DH3000 moisture ingress and delamination protocols | **Available** |
+| `uv-preconditioning` | UV exposure testing per IEC 61215, yellowing index, transmittance loss | **Available** |
+| `mechanical-load` | Static/dynamic load testing, wind/snow simulation, cell cracking detection | **Available** |
+| `pv-module-flash-testing` | IV flash test procedures, STC correction, measurement uncertainty | **Available** |
 
 ---
 
@@ -75,11 +75,11 @@ Reliability engineering, failure analysis, and quality management.
 
 | Skill | Description | Status |
 |-------|-------------|--------|
-| `fmea-generator` | FMEA document generation for PV components | Planned |
-| `weibull-analysis` | Weibull distribution fitting for lifetime prediction | Planned |
-| `rca-facilitator` | Root Cause Analysis workflow and documentation | Planned |
-| `cn-rn-automation` | Change Notice / Release Note automation | Planned |
-| `degradation-modeler` | Long-term degradation rate modeling | Planned |
+| `fmea-analysis` | Failure Mode and Effects Analysis for PV modules, RPN calculation, mitigation | **Available** |
+| `weibull-reliability` | Weibull distribution fitting, MTBF, failure rate prediction, bathtub curve | **Available** |
+| `degradation-modeling` | LID, LeTID, PID mechanisms, annual degradation rates, lifetime prediction | **Available** |
+| `root-cause-analysis` | 5-Why, fishbone diagram, fault tree analysis for PV field failures | **Available** |
+| `cn-rn-documentation` | Change Notice / Release Note generation, revision tracking, ECO workflow | **Available** |
 | `warranty-analysis` | Warranty reserve and claim rate calculation | Planned |
 
 ---

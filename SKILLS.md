@@ -6,8 +6,8 @@
 
 | Pack | Domain | Skills | Status | Agent(s) |
 |------|--------|--------|--------|----------|
-| `pv-materials` | Materials Science | 6 | Planning | Dravya-Agent |
-| `pv-cell-module` | Cell & Module | 8 | Planning | Kosha-Agent, Shakti-Agent |
+| `pv-materials` | Materials Science | 6 | **Available** | Dravya-Agent |
+| `pv-cell-module` | Cell & Module | 8 | **Available** | Kosha-Agent, Shakti-Agent |
 | `pv-testing` | Testing & Compliance | 7 | **Available** | Pariksha-Agent |
 | `pv-reliability` | Reliability & Quality | 6 | **Available** | Nityata-Agent |
 | `pv-analytics` | Statistical Analysis | 5 | Planning | Cross-cutting |
@@ -31,12 +31,12 @@ Materials science skills for PV research and manufacturing.
 
 | Skill | Description | Status |
 |-------|-------------|--------|
-| `silicon-characterization` | Wafer quality, resistivity, lifetime measurements | Planned |
-| `perovskite-modeler` | Composition modeling, bandgap tuning, stability | Planned |
-| `xrd-analysis` | X-ray diffraction pattern analysis and phase identification | Planned |
-| `sem-interpretation` | SEM/TEM image analysis for microstructure | Planned |
-| `el-imaging` | Electroluminescence image defect detection | Planned |
-| `defect-classifier` | Material defect classification (LeTID, PID, UV) | Planned |
+| `silicon-characterization` | Wafer quality, resistivity, lifetime measurements | **Available** |
+| `perovskite-modeler` | Composition modeling, bandgap tuning, stability | **Available** |
+| `xrd-analysis` | X-ray diffraction pattern analysis and phase identification | **Available** |
+| `sem-interpretation` | SEM/TEM image analysis for microstructure | **Available** |
+| `el-imaging` | Electroluminescence image defect detection | **Available** |
+| `defect-classifier` | Material defect classification (LeTID, PID, UV) | **Available** |
 
 ---
 
@@ -46,14 +46,14 @@ Cell design, module construction, and BoM management.
 
 | Skill | Description | Status |
 |-------|-------------|--------|
-| `bom-generator` | Bill of Materials creation and validation | Planned |
-| `ctm-calculator` | Cell-to-Module power loss/gain analysis | Planned |
-| `iv-curve-modeler` | I-V curve simulation and parameter extraction | Planned |
-| `cell-efficiency` | Cell efficiency analysis at STC/NOCT conditions | Planned |
-| `diode-model` | Single/double diode model parameter fitting | Planned |
-| `temperature-coefficients` | Temperature coefficient analysis and modeling | Planned |
-| `module-construction` | Module layup design and material selection | Planned |
-| `lamination-params` | Lamination process parameter optimization | Planned |
+| `bom-generator` | Bill of Materials creation and validation | **Available** |
+| `ctm-calculator` | Cell-to-Module power loss/gain analysis | **Available** |
+| `iv-curve-modeler` | I-V curve simulation and parameter extraction | **Available** |
+| `cell-efficiency` | Cell efficiency analysis at STC/NOCT conditions | **Available** |
+| `diode-model` | Single/double diode model parameter fitting | **Available** |
+| `temperature-coefficients` | Temperature coefficient analysis and modeling | **Available** |
+| `module-construction` | Module layup design and material selection | **Available** |
+| `lamination-params` | Lamination process parameter optimization | **Available** |
 
 ---
 

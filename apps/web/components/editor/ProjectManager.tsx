@@ -70,6 +70,24 @@ const TEMPLATES = [
     description: "Literature review format",
     icon: "📚",
   },
+  {
+    id: "iec-test-report",
+    name: "IEC Test Report",
+    description: "IEC 61215/61730 qualification test report",
+    icon: "🏗️",
+  },
+  {
+    id: "fmea-report",
+    name: "FMEA Report",
+    description: "Failure Mode and Effects Analysis",
+    icon: "⚠️",
+  },
+  {
+    id: "energy-yield",
+    name: "Energy Yield Assessment",
+    description: "P50/P90 energy yield report",
+    icon: "⚡",
+  },
 ];
 
 export function getTemplateContent(templateId: string, mode: "markdown" | "latex"): string {
@@ -284,6 +302,148 @@ $^1$[Affiliation 1], $^2$[Affiliation 2]
 ## 7. Conclusion
 
 ## References
+`,
+    "iec-test-report": `# IEC Test Report
+
+**Report No:** IEC-TR-${Date.now().toString().slice(-6)}
+**Standard:** IEC 61215 / IEC 61730
+**Date:** ${new Date().toISOString().split("T")[0]}
+**Laboratory:** [Laboratory Name]
+
+---
+
+## 1. Test Object Description
+
+| Parameter | Value |
+|-----------|-------|
+| Module Type | |
+| Manufacturer | |
+| Model Number | |
+| Serial Number | |
+| Rated Power (Pmax) | W |
+| Voc | V |
+| Isc | A |
+| Cell Technology | |
+
+## 2. Test Sequence
+
+### 2.1 Visual Inspection (MQT 01)
+
+### 2.2 Maximum Power Determination (MQT 02)
+
+### 2.3 Insulation Test (MQT 03)
+
+### 2.4 Temperature Coefficients (MQT 04)
+
+### 2.5 Nominal Operating Cell Temperature (MQT 05)
+
+## 3. Results Summary
+
+| Test | Requirement | Result | Pass/Fail |
+|------|-------------|--------|-----------|
+| MQT 01 | No major defects | | |
+| MQT 02 | Pmax ≥ rated | | |
+| MQT 03 | Insulation ≥ 40 MΩ·m² | | |
+
+## 4. Conclusion
+
+## Appendices
+`,
+    "fmea-report": `# FMEA Report: [System/Component Name]
+
+**Date:** ${new Date().toISOString().split("T")[0]}
+**Prepared by:** [Name]
+**FMEA Type:** Design / Process / System
+
+---
+
+## 1. System Description
+
+[Describe the PV system or component under analysis]
+
+## 2. Scope and Boundaries
+
+## 3. FMEA Worksheet
+
+| Item | Potential Failure Mode | Potential Effect(s) | Severity (1-10) | Potential Cause(s) | Occurrence (1-10) | Current Controls | Detection (1-10) | RPN | Recommended Actions |
+|------|----------------------|---------------------|-----------------|--------------------|--------------------|-----------------|-------------------|-----|---------------------|
+| PV Module | Cell cracking | Power loss | 7 | Thermal stress | 4 | Visual inspection | 5 | 140 | |
+| Junction Box | Water ingress | Ground fault | 9 | Seal degradation | 3 | IP rating test | 4 | 108 | |
+| Inverter | MPPT failure | Yield loss | 6 | Firmware bug | 2 | Monitoring | 3 | 36 | |
+
+## 4. Risk Assessment
+
+### 4.1 High-Risk Items (RPN > 100)
+
+### 4.2 Medium-Risk Items (RPN 50-100)
+
+### 4.3 Low-Risk Items (RPN < 50)
+
+## 5. Recommended Actions
+
+## 6. Conclusion
+`,
+    "energy-yield": `# Energy Yield Assessment
+
+**Project:** [Project Name]
+**Location:** [Latitude, Longitude]
+**Capacity:** [MWp DC / MWac]
+**Date:** ${new Date().toISOString().split("T")[0]}
+**Prepared by:** [Name]
+
+---
+
+## 1. Executive Summary
+
+| Parameter | Value |
+|-----------|-------|
+| Installed Capacity | MWp |
+| P50 Annual Yield | MWh/year |
+| P90 Annual Yield | MWh/year |
+| Specific Yield (P50) | kWh/kWp |
+| Performance Ratio | % |
+| Capacity Factor | % |
+
+## 2. Site Description
+
+### 2.1 Location and Climate
+### 2.2 Solar Resource Assessment
+
+## 3. System Design
+
+### 3.1 Module Specifications
+### 3.2 Inverter Specifications
+### 3.3 Array Configuration
+
+## 4. Solar Resource Data
+
+| Month | GHI (kWh/m²) | DNI (kWh/m²) | DHI (kWh/m²) | Avg Temp (°C) |
+|-------|---------------|---------------|---------------|---------------|
+| Jan | | | | |
+| Feb | | | | |
+| Mar | | | | |
+
+## 5. Energy Loss Waterfall
+
+| Loss Category | Loss (%) |
+|--------------|----------|
+| Shading | |
+| Soiling | |
+| Temperature | |
+| Module mismatch | |
+| DC wiring | |
+| Inverter efficiency | |
+| AC wiring | |
+| Transformer | |
+| Availability | |
+| Grid curtailment | |
+| **Total Losses** | |
+
+## 6. Uncertainty Analysis
+
+## 7. P50/P90 Results
+
+## 8. Conclusion
 `,
   };
   return templates[templateId] || templates["pv-research"];

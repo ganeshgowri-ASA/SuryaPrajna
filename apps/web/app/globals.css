@@ -64,6 +64,7 @@
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
@@ -74,4 +75,60 @@
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #4b5563;
+}
+
+/* Editor-specific styles */
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Print styles for PDF export */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  .no-print,
+  nav,
+  .editor-sidebar,
+  .editor-toolbar,
+  .status-bar {
+    display: none !important;
+  }
+  .prose {
+    max-width: 100% !important;
+    color: black !important;
+  }
+  .prose h1,
+  .prose h2,
+  .prose h3 {
+    color: black !important;
+  }
+  @page {
+    margin: 2.5cm;
+    size: A4;
+  }
+}
+
+/* Fade-in animation */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-in {
+  animation: fade-in 0.15s ease-out;
+}
+
+/* Drag handle cursor override */
+.cursor-col-resize * {
+  cursor: col-resize !important;
 }

@@ -16,8 +16,9 @@
 | `pv-plant-design` | Plant Design | 7 | Planning | Vinyasa-Agent |
 | `pv-power-systems` | Power Systems | 7 | Planning | Vidyut-Agent |
 | `pv-sustainability` | Sustainability & ESG | 5 | Planning | Cross-cutting |
+| `pv-integrations` | API Integrations | 5 | **Available** | Viveka-Agent |
 
-**Total planned skills: ~67** across 10 packs
+**Total planned skills: ~72** across 11 packs
 
 ---
 
@@ -175,6 +176,22 @@ Environmental impact, lifecycle, and policy.
 | `esg-reporting` | ESG metrics and reporting for solar projects | Planned |
 | `recycling-planner` | End-of-life recycling and circular economy | Planned |
 | `policy-framework` | National/international policy analysis | Planned |
+
+---
+
+---
+
+## Pack 11: pv-integrations
+
+API integration layer for knowledge retrieval, reference management, AI writing assistance, and academic literature discovery.
+
+| Skill | Description | Status |
+|-------|-------------|--------|
+| `pinecone-connector` | Vector DB knowledge retrieval via Pinecone API; semantic search and RAG over indexed PV literature | **Available** |
+| `zotero-connector` | Reference management, citation import/export, bibliography generation via Zotero Web API | **Available** |
+| `jenni-connector` | AI writing assistance and literature review augmentation via Jenni.ai | **Available** |
+| `scholar-gateway` | Multi-source academic paper search and citation analysis via Semantic Scholar, CrossRef, Scopus | **Available** |
+| `perplexity-connector` | Real-time literature search and fact verification via Perplexity AI | **Available** |
 
 ---
 

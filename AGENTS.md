@@ -17,6 +17,7 @@ graph TD
     S --> V[Vinyasa-Agent]
     S --> Vi[Vidyut-Agent]
     S --> G[Grantha-Agent]
+    S --> Vi2[Viveka-Agent]
 ```
 
 ---
@@ -231,6 +232,27 @@ graph TD
 - Regulatory filing preparation
 
 **Key skills:** `report-generator`, `datasheet-creator`, `compliance-docs`, `lca-report`, `eia-report`
+
+---
+
+## Viveka-Agent (API Integrations & Knowledge Retrieval)
+
+**Sanskrit:** _Viveka_ = wisdom, discernment, knowledge discrimination
+**Domain:** `pv-integrations`
+
+**Capabilities:**
+- Semantic vector search over indexed PV literature (Pinecone RAG)
+- Reference management: import, export, and bibliography generation (Zotero)
+- Academic paper discovery across Semantic Scholar, CrossRef, and Scopus
+- Real-time literature search and fact verification (Perplexity AI)
+- AI writing assistance and literature review augmentation (Jenni.ai)
+- Citation network analysis and influential paper identification
+- Cross-source knowledge deduplication and indexing pipeline
+- Grounding LLM responses in retrieved, cited sources
+
+**Key skills:** `pinecone-connector`, `zotero-connector`, `scholar-gateway`, `perplexity-connector`, `jenni-connector`
+
+**Invoked by:** All domain agents when they need external literature, citations, or writing assistance.
 
 ---
 

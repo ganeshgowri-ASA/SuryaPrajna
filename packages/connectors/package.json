@@ -1,0 +1,27 @@
+{
+  "name": "@suryaprajna/connectors",
+  "version": "0.1.0",
+  "description": "Connector integrations for external services used by the SuryaPrajna PV skills platform",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "suryaprajna",
+    "pv",
+    "connectors",
+    "pinecone",
+    "zotero",
+    "semantic-scholar",
+    "openai",
+    "anthropic"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "@types/node": "^20.11.0"
+  }
+}

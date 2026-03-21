@@ -12,8 +12,8 @@
 | `pv-reliability` | Reliability & Quality | 6 | **Available** | Nityata-Agent |
 | `pv-analytics` | Statistical Analysis | 5 | **Available** | Cross-cutting |
 | `pv-finance` | Finance & Economics | 6 | **Available** | Nivesha-Agent |
-| `pv-energy` | Energy & Weather | 10 | **In Progress** | Megha-Agent, Phala-Agent |
-| `pv-plant-design` | Plant Design | 7 | Planning | Vinyasa-Agent |
+| `pv-energy` | Energy & Weather | 10 | **Available** | Megha-Agent, Phala-Agent |
+| `pv-plant-design` | Plant Design | 7 | **Available** | Vinyasa-Agent |
 | `pv-power-systems` | Power Systems | 7 | Planning | Vidyut-Agent |
 | `pv-sustainability` | Sustainability & ESG | 5 | Planning | Cross-cutting |
 | `pv-scientific-writing` | Scientific Writing & Publishing | 4 | **Available** | Grantha-Agent |
@@ -124,15 +124,15 @@ Energy yield, weather data, diagnostics, and forecasting.
 | Skill | Description | Status |
 |-------|-------------|--------|
 | `pvlib-analysis` | pvlib-based solar energy modeling | **Available** |
-| `energy-yield` | Annual energy yield simulation | Planned |
-| `p50-p90-analysis` | Exceedance probability (P50/P90) analysis | Planned |
-| `loss-tree` | Energy loss tree construction and analysis | Planned |
-| `pr-monitoring` | Performance Ratio calculation and monitoring | Planned |
-| `weather-data-ingestion` | TMY, MERRA-2, ERA5, NSRDB data ingestion | Planned |
-| `irradiance-modeler` | GHI/DNI/DHI decomposition and transposition | Planned |
-| `solar-resource-assessment` | Site solar resource evaluation | Planned |
-| `energy-forecasting` | Statistical and ML-based energy forecasting | Planned |
-| `iv-diagnostics` | Field IV curve tracing and fault diagnosis | Planned |
+| `energy-yield` | Annual energy yield simulation | **Available** |
+| `p50-p90-analysis` | Exceedance probability (P50/P90) analysis | **Available** |
+| `loss-tree` | Energy loss tree construction and analysis | **Available** |
+| `pr-monitoring` | Performance Ratio calculation and monitoring | **Available** |
+| `weather-data-ingestion` | TMY, MERRA-2, ERA5, NSRDB data ingestion | **Available** |
+| `irradiance-modeler` | GHI/DNI/DHI decomposition and transposition | **Available** |
+| `solar-resource-assessment` | Site solar resource evaluation | **Available** |
+| `energy-forecasting` | Statistical and ML-based energy forecasting | **Available** |
+| `iv-diagnostics` | Field IV curve tracing and fault diagnosis | **Available** |
 
 ---
 
@@ -142,13 +142,13 @@ System design, layout, and engineering.
 
 | Skill | Description | Status |
 |-------|-------------|--------|
-| `array-layout` | Ground-mount array layout optimization | Planned |
-| `rooftop-design` | Rooftop system design and layout | Planned |
-| `floating-solar` | Floating PV (FPV) system design | Planned |
-| `shading-analysis` | Horizon, inter-row, and near-field shading | Planned |
-| `string-sizing` | String sizing and inverter matching | Planned |
-| `sld-generator` | Single Line Diagram generation | Planned |
-| `cable-sizing` | Cable sizing, voltage drop, and routing | Planned |
+| `array-layout` | Ground-mount array layout optimization | **Available** |
+| `rooftop-design` | Rooftop system design and layout | **Available** |
+| `floating-solar` | Floating PV (FPV) system design | **Available** |
+| `shading-analysis` | Horizon, inter-row, and near-field shading | **Available** |
+| `string-sizing` | String sizing and inverter matching | **Available** |
+| `sld-generator` | Single Line Diagram generation | **Available** |
+| `cable-sizing` | Cable sizing, voltage drop, and routing | **Available** |
 
 ---
 

@@ -271,7 +271,7 @@ graph TD
 ### Grantha-Agent (Documentation & Compliance)
 
 **Sanskrit:** _Grantha_ = book, document, treatise
-**Domain:** Cross-cutting (all packs)
+**Domain:** Cross-cutting (all packs), `pv-scientific-writing`
 
 **When to invoke:** User asks about technical reports, datasheets, compliance documentation, LCA reports, or regulatory filings.
 
@@ -333,6 +333,20 @@ Every SKILL.md follows this structure:
 **Domain:** `pv-integrations`
 
 **Capabilities:**
+- Technical report generation
+- Datasheet creation and validation
+- IEC / BIS standards compliance documentation
+- Environmental compliance (EIA, ESG) reports
+- Project proposal document automation
+- LCA (Life Cycle Assessment) reports
+- Quality management documentation
+- Regulatory filing preparation
+- Scientific manuscript authoring with publisher-specific formatting (Wiley, Elsevier, IEEE, Springer, Nature, SPIE)
+- Systematic literature review with Semantic Scholar, Perplexity AI, Zotero integration
+- Publication-quality figure generation (I-V curves, EQE, loss trees, EL/IR analysis)
+- Multi-section report compilation with cross-referencing and multi-format export
+
+**Key skills:** `report-generator`, `datasheet-creator`, `compliance-docs`, `lca-report`, `eia-report`, `manuscript-writer`, `literature-review`, `figure-generator`, `report-compiler`
 - Semantic vector search over indexed PV literature (Pinecone RAG)
 - Reference management: import, export, and bibliography generation (Zotero)
 - Academic paper discovery across Semantic Scholar, CrossRef, and Scopus

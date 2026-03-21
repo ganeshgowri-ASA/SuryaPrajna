@@ -16,6 +16,9 @@
 | `pv-plant-design` | Plant Design | 7 | Planning | Vinyasa-Agent |
 | `pv-power-systems` | Power Systems | 7 | Planning | Vidyut-Agent |
 | `pv-sustainability` | Sustainability & ESG | 5 | Planning | Cross-cutting |
+| `pv-scientific-writing` | Scientific Writing & Publishing | 4 | **Available** | Grantha-Agent |
+
+**Total planned skills: ~71** across 11 packs
 | `pv-integrations` | API Integrations | 5 | **Available** | Viveka-Agent |
 
 **Total planned skills: ~72** across 11 packs
@@ -179,6 +182,16 @@ Environmental impact, lifecycle, and policy.
 
 ---
 
+## Pack 11: pv-scientific-writing
+
+Scientific manuscript authoring, literature review, figure generation, and report compilation.
+
+| Skill | Description | Status |
+|-------|-------------|--------|
+| `manuscript-writer` | Scientific manuscript authoring with publisher-specific templates (Wiley, Elsevier, IEEE, Springer, Nature, SPIE) | **Available** |
+| `literature-review` | Systematic literature review with Semantic Scholar, Zotero, Perplexity AI, and auto-citation | **Available** |
+| `figure-generator` | Publication-quality PV figures: I-V curves, loss trees, EQE, degradation plots, EL/IR analysis | **Available** |
+| `report-compiler` | Multi-section report assembly with TOC, cross-references, and PDF/LaTeX/Word export | **Available** |
 ---
 
 ## Pack 11: pv-integrations

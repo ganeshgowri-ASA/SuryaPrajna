@@ -14,8 +14,8 @@
 | `pv-finance` | Finance & Economics | 6 | Planning | Nivesha-Agent |
 | `pv-energy` | Energy & Weather | 10 | **In Progress** | Megha-Agent, Phala-Agent |
 | `pv-plant-design` | Plant Design | 7 | Planning | Vinyasa-Agent |
-| `pv-power-systems` | Power Systems | 7 | Planning | Vidyut-Agent |
-| `pv-sustainability` | Sustainability & ESG | 5 | Planning | Cross-cutting |
+| `pv-power-systems` | Power Systems | 7 | **Available** | Vidyut-Agent |
+| `pv-sustainability` | Sustainability & ESG | 5 | **Available** | Cross-cutting |
 | `pv-scientific-writing` | Scientific Writing & Publishing | 4 | **Available** | Grantha-Agent |
 
 **Total planned skills: ~71** across 11 packs
@@ -158,13 +158,13 @@ Power electronics, grid integration, and hybrid systems.
 
 | Skill | Description | Status |
 |-------|-------------|--------|
-| `load-flow-analysis` | Power flow and load flow studies | Planned |
-| `hybrid-modeling` | Solar+wind+battery+diesel hybrid modeling | Planned |
-| `mppt-analysis` | MPPT algorithm comparison and analysis | Planned |
-| `inverter-modeling` | Inverter efficiency and sizing modeling | Planned |
-| `bess-sizing` | Battery storage sizing and optimization | Planned |
-| `grid-integration` | Grid code compliance and interconnection | Planned |
-| `power-quality` | Harmonics, THD, power factor analysis | Planned |
+| `load-flow-analysis` | Power flow and load flow studies | **Available** |
+| `hybrid-modeling` | Solar+wind+battery+diesel hybrid modeling | **Available** |
+| `mppt-analysis` | MPPT algorithm comparison and analysis | **Available** |
+| `inverter-modeling` | Inverter efficiency and sizing modeling | **Available** |
+| `bess-sizing` | Battery storage sizing and optimization | **Available** |
+| `grid-integration` | Grid code compliance and interconnection | **Available** |
+| `power-quality` | Harmonics, THD, power factor analysis | **Available** |
 
 ---
 
@@ -174,11 +174,11 @@ Environmental impact, lifecycle, and policy.
 
 | Skill | Description | Status |
 |-------|-------------|--------|
-| `carbon-calculator` | Carbon footprint and offset calculations | Planned |
-| `lca-assessment` | Life Cycle Assessment for PV systems | Planned |
-| `esg-reporting` | ESG metrics and reporting for solar projects | Planned |
-| `recycling-planner` | End-of-life recycling and circular economy | Planned |
-| `policy-framework` | National/international policy analysis | Planned |
+| `carbon-calculator` | Carbon footprint and offset calculations | **Available** |
+| `lca-assessment` | Life Cycle Assessment for PV systems | **Available** |
+| `esg-reporting` | ESG metrics and reporting for solar projects | **Available** |
+| `recycling-planner` | End-of-life recycling and circular economy | **Available** |
+| `policy-framework` | National/international policy analysis | **Available** |
 
 ---
 

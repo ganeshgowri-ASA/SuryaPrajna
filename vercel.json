@@ -8,10 +8,5 @@
       "source": "/(.*)",
       "destination": "/$1"
     }
-  ],
-  "env": {
-    "ANTHROPIC_API_KEY": "@anthropic-api-key",
-    "OPENAI_API_KEY": "@openai-api-key",
-    "PINECONE_API_KEY": "@pinecone-api-key"
-  }
+  ]
 }

@@ -19,6 +19,9 @@
 | `pv-scientific-writing` | Scientific Writing & Publishing | 4 | **Available** | Grantha-Agent |
 
 **Total planned skills: ~71** across 11 packs
+| `pv-integrations` | API Integrations | 5 | **Available** | Viveka-Agent |
+
+**Total planned skills: ~72** across 11 packs
 
 ---
 
@@ -189,6 +192,19 @@ Scientific manuscript authoring, literature review, figure generation, and repor
 | `literature-review` | Systematic literature review with Semantic Scholar, Zotero, Perplexity AI, and auto-citation | **Available** |
 | `figure-generator` | Publication-quality PV figures: I-V curves, loss trees, EQE, degradation plots, EL/IR analysis | **Available** |
 | `report-compiler` | Multi-section report assembly with TOC, cross-references, and PDF/LaTeX/Word export | **Available** |
+---
+
+## Pack 11: pv-integrations
+
+API integration layer for knowledge retrieval, reference management, AI writing assistance, and academic literature discovery.
+
+| Skill | Description | Status |
+|-------|-------------|--------|
+| `pinecone-connector` | Vector DB knowledge retrieval via Pinecone API; semantic search and RAG over indexed PV literature | **Available** |
+| `zotero-connector` | Reference management, citation import/export, bibliography generation via Zotero Web API | **Available** |
+| `jenni-connector` | AI writing assistance and literature review augmentation via Jenni.ai | **Available** |
+| `scholar-gateway` | Multi-source academic paper search and citation analysis via Semantic Scholar, CrossRef, Scopus | **Available** |
+| `perplexity-connector` | Real-time literature search and fact verification via Perplexity AI | **Available** |
 
 ---
 

@@ -1,39 +1,47 @@
 "use client";
 
-import { useState, useCallback, useEffect, useRef } from "react";
-import dynamic from "next/dynamic";
-import PreviewPanel from "@/components/editor/PreviewPanel";
 import AIAssistantPanel from "@/components/editor/AIAssistantPanel";
-import ReferenceManager, { type Reference } from "@/components/editor/ReferenceManager";
+import EditorToolbar from "@/components/editor/EditorToolbar";
+import FigureTools from "@/components/editor/FigureTools";
+import ImportDialog from "@/components/editor/ImportDialog";
+import OutlinePanel from "@/components/editor/OutlinePanel";
+import PreviewPanel from "@/components/editor/PreviewPanel";
+import ProblemsPanel from "@/components/editor/ProblemsPanel";
 import ProjectManager, {
   type Project,
   type ProjectFile,
   getTemplateContent,
 } from "@/components/editor/ProjectManager";
-import FigureTools from "@/components/editor/FigureTools";
-import VersionHistory, { type Version } from "@/components/editor/VersionHistory";
-import OutlinePanel from "@/components/editor/OutlinePanel";
+import RAGPanel from "@/components/editor/RAGPanel";
+import ReferenceManager, { type Reference } from "@/components/editor/ReferenceManager";
 import SettingsPanel, {
   type EditorSettings,
   DEFAULT_SETTINGS,
 } from "@/components/editor/SettingsPanel";
-import EditorToolbar from "@/components/editor/EditorToolbar";
-import ProblemsPanel from "@/components/editor/ProblemsPanel";
-import RAGPanel from "@/components/editor/RAGPanel";
 import TemplatesGallery from "@/components/editor/TemplatesGallery";
+import VersionHistory, { type Version } from "@/components/editor/VersionHistory";
+import {
+  type ImportResult,
+  latexToMarkdown,
+  markdownToLatex,
+  parseBibtex,
+  referencesToBibtex,
+  rtfToMarkdown,
+  structurePdfText,
+  textToImportResult,
+} from "@/lib/converters";
+import dynamic from "next/dynamic";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 // Dynamic import for CodeMirror (client-only)
-const CodeMirrorEditor = dynamic(
-  () => import("@/components/editor/CodeMirrorEditor"),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="h-full flex items-center justify-center text-gray-600 text-sm">
-        Loading editor...
-      </div>
-    ),
-  }
-);
+const CodeMirrorEditor = dynamic(() => import("@/components/editor/CodeMirrorEditor"), {
+  ssr: false,
+  loading: () => (
+    <div className="h-full flex items-center justify-center text-gray-600 text-sm">
+      Loading editor...
+    </div>
+  ),
+});
 
 type SidebarTab = "files" | "refs" | "outline" | "history" | "rag";
 type RightPanelMode = "preview" | "ai" | "split";
@@ -81,19 +89,94 @@ function saveToStorage(key: string, value: unknown) {
   }
 }
 
+async function processDroppedFile(
+  ext: string,
+  file: File,
+  onImport: (result: ImportResult) => void,
+  onImportBibtex: (bibtex: string) => void,
+  setNotice: (msg: string) => void,
+) {
+  if (ext === ".bib") {
+    const text = await file.text();
+    onImportBibtex(text);
+    const parsed = parseBibtex(text);
+    setNotice(`Imported ${parsed.entries.length} references from BibTeX`);
+    setTimeout(() => setNotice(""), 5000);
+    return;
+  }
+
+  const clientFormats = [".md", ".txt", ".tex", ".rtf"];
+  if (clientFormats.includes(ext)) {
+    const text = await file.text();
+    const converters: Record<string, () => ImportResult> = {
+      ".md": () => textToImportResult(text, "Markdown"),
+      ".txt": () => textToImportResult(text, "Plain Text"),
+      ".tex": () => latexToMarkdown(text),
+      ".rtf": () => rtfToMarkdown(text),
+    };
+    const result = converters[ext]();
+    onImport(result);
+    if (ext === ".tex" && result.bibtex) onImportBibtex(result.bibtex);
+    return;
+  }
+
+  setNotice(ext === ".docx" ? "Converting Word document..." : "Extracting text from PDF...");
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("format", ext.slice(1));
+
+  const response = await fetch("/api/convert", { method: "POST", body: formData });
+  if (!response.ok) {
+    const errData = await response.json();
+    throw new Error(errData.error || "Conversion failed");
+  }
+
+  const data = await response.json();
+  const result =
+    ext === ".pdf"
+      ? structurePdfText(data.markdown)
+      : textToImportResult(data.markdown, "Word Document");
+  onImport(result);
+}
+
+function markdownToDocxHtml(md: string): string {
+  let html = md;
+  // Headings
+  html = html.replace(/^####\s+(.+)$/gm, "<h4>$1</h4>");
+  html = html.replace(/^###\s+(.+)$/gm, "<h3>$1</h3>");
+  html = html.replace(/^##\s+(.+)$/gm, "<h2>$1</h2>");
+  html = html.replace(/^#\s+(.+)$/gm, "<h1>$1</h1>");
+  // Bold, italic
+  html = html.replace(/\*\*\*(.+?)\*\*\*/g, "<b><i>$1</i></b>");
+  html = html.replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
+  html = html.replace(/\*(.+?)\*/g, "<i>$1</i>");
+  // Inline code
+  html = html.replace(/`([^`]+)`/g, "<code>$1</code>");
+  // Lists
+  html = html.replace(/^- (.+)$/gm, "<li>$1</li>");
+  html = html.replace(/^\d+\.\s+(.+)$/gm, "<li>$1</li>");
+  // Links
+  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
+  // Line breaks for paragraphs
+  html = html.replace(/\n\n/g, "</p><p>");
+  html = html.replace(/\n/g, "<br>");
+  html = `<p>${html}</p>`;
+  return html;
+}
+
 export default function EditorPage() {
   // Core state
   const [project, setProject] = useState<Project>(() =>
-    loadFromStorage("sp-editor-project", createDefaultProject())
+    loadFromStorage("sp-editor-project", createDefaultProject()),
   );
   const [references, setReferences] = useState<Reference[]>(() =>
-    loadFromStorage("sp-editor-refs", [])
+    loadFromStorage("sp-editor-refs", []),
   );
   const [versions, setVersions] = useState<Version[]>(() =>
-    loadFromStorage("sp-editor-versions", [])
+    loadFromStorage("sp-editor-versions", []),
   );
   const [settings, setSettings] = useState<EditorSettings>(() =>
-    loadFromStorage("sp-editor-settings", DEFAULT_SETTINGS)
+    loadFromStorage("sp-editor-settings", DEFAULT_SETTINGS),
   );
 
   // UI state
@@ -114,14 +197,16 @@ export default function EditorPage() {
   const [isDraggingSidebar, setIsDraggingSidebar] = useState(false);
   const [isDraggingAI, setIsDraggingAI] = useState(false);
   const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "unsaved">("saved");
+  const [importOpen, setImportOpen] = useState(false);
+  const [isDragOverEditor, setIsDragOverEditor] = useState(false);
+  const [importNotice, setImportNotice] = useState("");
 
   const autoSaveTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const lastAutoSave = useRef<number>(Date.now());
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Get active file
-  const activeFile =
-    project.files.find((f) => f.id === project.activeFileId) || project.files[0];
+  const activeFile = project.files.find((f) => f.id === project.activeFileId) || project.files[0];
   const content = activeFile?.content || "";
 
   // Word count
@@ -183,7 +268,7 @@ export default function EditorPage() {
     setProject((prev) => ({
       ...prev,
       files: prev.files.map((f) =>
-        f.id === prev.activeFileId ? { ...f, content: newContent } : f
+        f.id === prev.activeFileId ? { ...f, content: newContent } : f,
       ),
       updatedAt: Date.now(),
     }));
@@ -233,7 +318,7 @@ export default function EditorPage() {
       });
       setVersions([]);
     },
-    [project.mode]
+    [project.mode],
   );
 
   // Insert citation
@@ -242,15 +327,15 @@ export default function EditorPage() {
       const citation = mode === "latex" ? `\\cite{${key}}` : `[@${key}]`;
       handleContentChange(content + citation);
     },
-    [content, handleContentChange]
+    [content, handleContentChange],
   );
 
   // Insert text at end
   const handleInsertText = useCallback(
     (text: string) => {
-      handleContentChange(content + "\n" + text);
+      handleContentChange(`${content}\n${text}`);
     },
-    [content, handleContentChange]
+    [content, handleContentChange],
   );
 
   // Version restore
@@ -258,7 +343,7 @@ export default function EditorPage() {
     (version: Version) => {
       handleContentChange(version.content);
     },
-    [handleContentChange]
+    [handleContentChange],
   );
 
   // Manual version save
@@ -275,7 +360,102 @@ export default function EditorPage() {
         },
       ]);
     },
-    [content]
+    [content],
+  );
+
+  // Import handler
+  const handleImport = useCallback(
+    (result: ImportResult) => {
+      if (!result.markdown) return;
+      handleContentChange(result.markdown);
+      const summary = [
+        `${result.metadata.wordCount.toLocaleString()} words`,
+        result.metadata.sectionCount > 0 ? `${result.metadata.sectionCount} sections` : null,
+        result.metadata.referenceCount > 0 ? `${result.metadata.referenceCount} references` : null,
+      ]
+        .filter(Boolean)
+        .join(", ");
+      setImportNotice(`Imported ${summary} from ${result.metadata.format}`);
+      setTimeout(() => setImportNotice(""), 5000);
+    },
+    [handleContentChange],
+  );
+
+  // Import BibTeX into references.bib file
+  const handleImportBibtex = useCallback((bibtex: string) => {
+    setProject((prev) => {
+      const bibFile = prev.files.find((f) => f.type === "bib");
+      if (bibFile) {
+        return {
+          ...prev,
+          files: prev.files.map((f) =>
+            f.type === "bib"
+              ? {
+                  ...f,
+                  content: f.content.trim() ? `${f.content}\n\n${bibtex}` : bibtex,
+                }
+              : f,
+          ),
+          updatedAt: Date.now(),
+        };
+      }
+      return {
+        ...prev,
+        files: [
+          ...prev.files,
+          {
+            id: `bib-${Date.now()}`,
+            name: "references.bib",
+            content: bibtex,
+            type: "bib" as const,
+          },
+        ],
+        updatedAt: Date.now(),
+      };
+    });
+  }, []);
+
+  // Drag-and-drop on editor area
+  const handleEditorDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.dataTransfer.types.includes("Files")) {
+      setIsDragOverEditor(true);
+    }
+  }, []);
+
+  const handleEditorDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOverEditor(false);
+  }, []);
+
+  const handleEditorDrop = useCallback(
+    async (e: React.DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsDragOverEditor(false);
+
+      const file = e.dataTransfer.files?.[0];
+      if (!file) return;
+
+      const ext = file.name.slice(file.name.lastIndexOf(".")).toLowerCase();
+      const supported = [".md", ".txt", ".tex", ".bib", ".docx", ".pdf", ".rtf"];
+
+      if (!supported.includes(ext)) {
+        setImportNotice(`Unsupported format: ${ext}`);
+        setTimeout(() => setImportNotice(""), 3000);
+        return;
+      }
+
+      try {
+        await processDroppedFile(ext, file, handleImport, handleImportBibtex, setImportNotice);
+      } catch (err) {
+        setImportNotice(`Import failed: ${err instanceof Error ? err.message : "Unknown error"}`);
+        setTimeout(() => setImportNotice(""), 5000);
+      }
+    },
+    [handleImport, handleImportBibtex],
   );
 
   // Toggle mode
@@ -290,15 +470,24 @@ export default function EditorPage() {
       let blob: Blob;
       let filename: string;
 
+      const bibFile = project.files.find((f) => f.type === "bib");
+      const bibContent = bibFile?.content || "";
+
       switch (format) {
         case "md":
           blob = new Blob([content], { type: "text/markdown" });
           filename = `${project.name}.md`;
           break;
-        case "tex":
-          blob = new Blob([content], { type: "text/x-tex" });
+        case "tex": {
+          // Convert Markdown to proper LaTeX document if in markdown mode
+          const texContent =
+            project.mode === "markdown"
+              ? markdownToLatex(content, project.name, bibContent)
+              : content;
+          blob = new Blob([texContent], { type: "text/x-tex" });
           filename = `${project.name}.tex`;
           break;
+        }
         case "html": {
           const htmlContent = `<!DOCTYPE html>
 <html><head><meta charset="utf-8"><title>${project.name}</title>
@@ -318,16 +507,23 @@ th{background:#f8f8f8;font-weight:bold}blockquote{border-left:4px solid #ddd;mar
           break;
         }
         case "docx": {
-          // Simple DOCX-compatible HTML for Word
+          // Word-compatible HTML with proper markdown-to-HTML conversion
+          const docHtml = markdownToDocxHtml(content);
           const docContent = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word'>
 <head><meta charset="utf-8"><style>body{font-family:'Times New Roman',serif;font-size:12pt;line-height:1.6}
 h1{font-size:16pt;font-weight:bold}h2{font-size:14pt;font-weight:bold}h3{font-size:12pt;font-weight:bold}
 table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:6px}</style></head>
-<body>${content.replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, "<br>")}</body></html>`;
+<body>${docHtml}</body></html>`;
           blob = new Blob([docContent], {
             type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
           });
           filename = `${project.name}.doc`;
+          break;
+        }
+        case "bib": {
+          const bibExport = bibContent || "% No references found\n";
+          blob = new Blob([bibExport], { type: "application/x-bibtex" });
+          filename = `${project.name}-references.bib`;
           break;
         }
         case "pdf":
@@ -344,7 +540,7 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:6p
       a.click();
       URL.revokeObjectURL(url);
     },
-    [content, project.name]
+    [content, project.name, project.mode, project.files],
   );
 
   // Format action from toolbar
@@ -364,30 +560,29 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:6p
       };
 
       if (action === "heading") {
-        const hashes = "#".repeat(parseInt(value || "1"));
-        handleContentChange(content + `\n${hashes} `);
+        const hashes = "#".repeat(Number.parseInt(value || "1"));
+        handleContentChange(`${content}\n${hashes} `);
         return;
       }
 
       if (action === "unordered-list") {
-        handleContentChange(content + "\n- Item 1\n- Item 2\n- Item 3\n");
+        handleContentChange(`${content}\n- Item 1\n- Item 2\n- Item 3\n`);
         return;
       }
 
       if (action === "ordered-list") {
-        handleContentChange(content + "\n1. Item 1\n2. Item 2\n3. Item 3\n");
+        handleContentChange(`${content}\n1. Item 1\n2. Item 2\n3. Item 3\n`);
         return;
       }
 
       if (action === "task-list") {
-        handleContentChange(content + "\n- [ ] Task 1\n- [ ] Task 2\n- [ ] Task 3\n");
+        handleContentChange(`${content}\n- [ ] Task 1\n- [ ] Task 2\n- [ ] Task 3\n`);
         return;
       }
 
       if (action === "table") {
         handleContentChange(
-          content +
-            "\n| Column 1 | Column 2 | Column 3 |\n|----------|----------|----------|\n| | | |\n| | | |\n"
+          `${content}\n| Column 1 | Column 2 | Column 3 |\n|----------|----------|----------|\n| | | |\n| | | |\n`,
         );
         return;
       }
@@ -396,14 +591,14 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:6p
       if (fmt) {
         if (selectedText && !fmt.block) {
           handleContentChange(
-            content.replace(selectedText, `${fmt.prefix}${selectedText}${fmt.suffix}`)
+            content.replace(selectedText, `${fmt.prefix}${selectedText}${fmt.suffix}`),
           );
         } else {
-          handleContentChange(content + `${fmt.prefix}text${fmt.suffix}`);
+          handleContentChange(`${content}${fmt.prefix}text${fmt.suffix}`);
         }
       }
     },
-    [content, handleContentChange, selectedText]
+    [content, handleContentChange, selectedText],
   );
 
   // AI action from toolbar
@@ -416,7 +611,7 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:6p
       setAiPanelOpen(true);
       // The AI panel will handle the actual action via its slash commands
     },
-    [hasAIKey]
+    [hasAIKey],
   );
 
   // Drag handlers for resizable panels
@@ -444,7 +639,15 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:6p
         if (w >= 260 && w <= 500) setAiPanelWidth(w);
       }
     },
-    [isDragging, isDraggingSidebar, isDraggingAI, sidebarOpen, sidebarWidth, aiPanelOpen, aiPanelWidth]
+    [
+      isDragging,
+      isDraggingSidebar,
+      isDraggingAI,
+      sidebarOpen,
+      sidebarWidth,
+      aiPanelOpen,
+      aiPanelWidth,
+    ],
   );
 
   const handleMouseUp = useCallback(() => {
@@ -513,6 +716,7 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:6p
       >
         <div className="flex items-center gap-3">
           <button
+            type="button"
             onClick={() => setSidebarOpen(!sidebarOpen)}
             className={`text-sm px-1.5 py-0.5 rounded transition-colors ${
               settings.theme === "light"
@@ -531,6 +735,7 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:6p
             {project.name}
           </h1>
           <button
+            type="button"
             onClick={toggleMode}
             className={`text-xs px-2 py-0.5 rounded border transition-colors ${
               settings.theme === "light"
@@ -543,6 +748,7 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:6p
         </div>
         <div className="flex items-center gap-1">
           <button
+            type="button"
             onClick={() => setTemplatesOpen(true)}
             className={`text-xs px-2 py-1 rounded transition-colors ${
               settings.theme === "light"
@@ -554,6 +760,7 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:6p
             + New
           </button>
           <button
+            type="button"
             onClick={() => setShowFigureTools(!showFigureTools)}
             className={`text-xs px-2 py-1 rounded transition-colors ${
               showFigureTools
@@ -571,6 +778,7 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:6p
             }`}
           />
           <button
+            type="button"
             onClick={() => {
               setRightPanelMode("preview");
               setAiPanelOpen(false);
@@ -586,6 +794,7 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:6p
             Preview
           </button>
           <button
+            type="button"
             onClick={() => setAiPanelOpen(!aiPanelOpen)}
             className={`text-xs px-2 py-1 rounded transition-colors ${
               aiPanelOpen
@@ -603,9 +812,23 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:6p
               settings.theme === "light" ? "bg-gray-300" : "bg-gray-700/50"
             }`}
           />
+          {/* Import button */}
+          <button
+            type="button"
+            onClick={() => setImportOpen(true)}
+            className={`text-xs px-2.5 py-1 rounded font-medium transition-colors ${
+              settings.theme === "light"
+                ? "text-amber-700 bg-amber-100 hover:bg-amber-200"
+                : "text-amber-300 bg-amber-500/15 hover:bg-amber-500/25"
+            }`}
+            title="Import document (.docx, .pdf, .tex, .md, .txt, .bib, .rtf)"
+          >
+            Import
+          </button>
           {/* Export dropdown */}
           <div className="relative group">
             <button
+              type="button"
               className={`text-xs px-2 py-1 rounded transition-colors ${
                 settings.theme === "light"
                   ? "text-gray-600 hover:text-gray-900 hover:bg-gray-200"
@@ -614,15 +837,17 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:6p
             >
               Export
             </button>
-            <div className="absolute right-0 top-full mt-1 bg-gray-900 border border-gray-700/60 rounded-lg shadow-xl opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity z-50 py-1 min-w-[140px]">
+            <div className="absolute right-0 top-full mt-1 bg-gray-900 border border-gray-700/60 rounded-lg shadow-xl opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity z-50 py-1 min-w-[160px]">
               {[
                 { fmt: "md", label: "Markdown (.md)" },
                 { fmt: "tex", label: "LaTeX (.tex)" },
                 { fmt: "html", label: "HTML (.html)" },
                 { fmt: "docx", label: "Word (.doc)" },
+                { fmt: "bib", label: "BibTeX (.bib)" },
                 { fmt: "pdf", label: "PDF (Print)" },
               ].map(({ fmt, label }) => (
                 <button
+                  type="button"
                   key={fmt}
                   onClick={() => handleExport(fmt)}
                   className="w-full text-left px-3 py-1.5 text-xs text-gray-300 hover:bg-amber-500/10 hover:text-amber-300 transition-colors"
@@ -633,6 +858,7 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:6p
             </div>
           </div>
           <button
+            type="button"
             onClick={() => setSettingsOpen(true)}
             className={`text-xs px-2 py-1 rounded transition-colors ${
               settings.theme === "light"
@@ -674,6 +900,7 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:6p
               >
                 {sidebarTabs.map((tab) => (
                   <button
+                    type="button"
                     key={tab.key}
                     onClick={() => setSidebarTab(tab.key)}
                     className={`flex-1 py-2 text-xs text-center transition-colors ${
@@ -710,9 +937,7 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:6p
                     citationFormat={settings.citationFormat}
                   />
                 )}
-                {sidebarTab === "outline" && (
-                  <OutlinePanel content={content} mode={project.mode} />
-                )}
+                {sidebarTab === "outline" && <OutlinePanel content={content} mode={project.mode} />}
                 {sidebarTab === "history" && (
                   <VersionHistory
                     versions={versions}
@@ -746,7 +971,51 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:6p
         )}
 
         {/* Editor + Preview split */}
-        <div className="flex-1 flex flex-col min-h-0 min-w-0">
+        <div
+          className="flex-1 flex flex-col min-h-0 min-w-0 relative"
+          onDragOver={handleEditorDragOver}
+          onDragLeave={handleEditorDragLeave}
+          onDrop={handleEditorDrop}
+        >
+          {/* Drag overlay */}
+          {isDragOverEditor && (
+            <div className="absolute inset-0 z-40 bg-amber-500/10 border-2 border-dashed border-amber-500 rounded-lg flex items-center justify-center pointer-events-none">
+              <div className="bg-gray-900/90 px-6 py-4 rounded-lg border border-amber-500/40 text-center">
+                <p className="text-amber-400 text-sm font-medium">Drop file to import</p>
+                <p className="text-gray-500 text-xs mt-1">
+                  .docx, .pdf, .tex, .md, .txt, .bib, .rtf
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Import notification toast */}
+          {importNotice && (
+            <div className="absolute top-2 left-1/2 -translate-x-1/2 z-40 bg-gray-800 border border-gray-700/60 rounded-lg shadow-xl px-4 py-2 text-xs text-gray-300 flex items-center gap-2">
+              <span
+                className={
+                  importNotice.includes("failed") || importNotice.includes("Unsupported")
+                    ? "text-red-400"
+                    : "text-amber-400"
+                }
+              >
+                {importNotice.includes("failed") || importNotice.includes("Unsupported")
+                  ? "✗"
+                  : importNotice.includes("Converting") || importNotice.includes("Extracting")
+                    ? "⟳"
+                    : "✓"}
+              </span>
+              {importNotice}
+              <button
+                type="button"
+                onClick={() => setImportNotice("")}
+                className="text-gray-500 hover:text-gray-300 ml-1"
+              >
+                ×
+              </button>
+            </div>
+          )}
+
           <div className="flex-1 flex min-h-0">
             {/* Editor pane */}
             <div
@@ -767,9 +1036,7 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:6p
               </div>
 
               {/* Figure tools */}
-              {showFigureTools && (
-                <FigureTools mode={project.mode} onInsert={handleInsertText} />
-              )}
+              {showFigureTools && <FigureTools mode={project.mode} onInsert={handleInsertText} />}
             </div>
 
             {/* Drag handle */}
@@ -782,10 +1049,7 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:6p
             </div>
 
             {/* Right pane (Preview) */}
-            <div
-              className="min-h-0 flex flex-col"
-              style={{ width: `${100 - splitPos}%` }}
-            >
+            <div className="min-h-0 flex flex-col" style={{ width: `${100 - splitPos}%` }}>
               <PreviewPanel content={content} mode={project.mode} />
             </div>
           </div>
@@ -807,9 +1071,7 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:6p
             }`}
           >
             <div className="flex items-center gap-4">
-              <span>
-                {wordCount} words
-              </span>
+              <span>{wordCount} words</span>
               <span>{charCount} chars</span>
               <span>{lineCount} lines</span>
               <span>
@@ -864,8 +1126,7 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:6p
                 onInsertText={handleInsertText}
                 onReplaceSelection={
                   selectedText
-                    ? (text: string) =>
-                        handleContentChange(content.replace(selectedText, text))
+                    ? (text: string) => handleContentChange(content.replace(selectedText, text))
                     : undefined
                 }
                 settings={{
@@ -891,6 +1152,13 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:6p
         isOpen={templatesOpen}
         onClose={() => setTemplatesOpen(false)}
         onSelect={handleNewProject}
+      />
+
+      <ImportDialog
+        isOpen={importOpen}
+        onClose={() => setImportOpen(false)}
+        onImport={handleImport}
+        onImportBibtex={handleImportBibtex}
       />
     </div>
   );

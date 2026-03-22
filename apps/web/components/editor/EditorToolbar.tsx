@@ -23,16 +23,16 @@ const MD_BUTTONS: ToolbarButton[] = [
   { label: "I", icon: "I", action: "italic", title: "Italic (Ctrl+I)" },
   { label: "S", icon: "S̶", action: "strikethrough", title: "Strikethrough" },
   { label: "Code", icon: "<>", action: "code", title: "Inline Code" },
-  { label: "", icon: "", action: "", title: "", separator: true },
+  { label: "", icon: "", action: "sep-1", title: "", separator: true },
   { label: "H1", icon: "H1", action: "heading", value: "1", title: "Heading 1" },
   { label: "H2", icon: "H2", action: "heading", value: "2", title: "Heading 2" },
   { label: "H3", icon: "H3", action: "heading", value: "3", title: "Heading 3" },
-  { label: "", icon: "", action: "", title: "", separator: true },
+  { label: "", icon: "", action: "sep-2", title: "", separator: true },
   { label: "UL", icon: "•", action: "unordered-list", title: "Bullet List" },
   { label: "OL", icon: "1.", action: "ordered-list", title: "Numbered List" },
   { label: "Task", icon: "☐", action: "task-list", title: "Task List" },
   { label: "Quote", icon: "❝", action: "blockquote", title: "Block Quote" },
-  { label: "", icon: "", action: "", title: "", separator: true },
+  { label: "", icon: "", action: "sep-3", title: "", separator: true },
   { label: "Link", icon: "🔗", action: "link", title: "Insert Link" },
   { label: "Image", icon: "🖼", action: "image", title: "Insert Image" },
   { label: "Table", icon: "▦", action: "table", title: "Insert Table" },
@@ -60,7 +60,7 @@ export default function EditorToolbar({
     (action: string, value?: string) => {
       onFormat(action, value);
     },
-    [onFormat]
+    [onFormat],
   );
 
   const buttons = mode === "markdown" ? MD_BUTTONS : MD_BUTTONS; // Same buttons, different formatting logic in handler
@@ -71,15 +71,11 @@ export default function EditorToolbar({
       <div className="flex items-center gap-0.5">
         {buttons.map((btn, i) => {
           if (btn.separator) {
-            return (
-              <div
-                key={`sep-${i}`}
-                className="w-px h-5 bg-gray-700/50 mx-1"
-              />
-            );
+            return <div key={btn.action} className="w-px h-5 bg-gray-700/50 mx-1" />;
           }
           return (
             <button
+              type="button"
               key={btn.action + (btn.value || "")}
               onClick={() => handleFormat(btn.action, btn.value)}
               className="px-1.5 py-1 text-xs text-gray-400 hover:text-white hover:bg-gray-700/50 rounded transition-colors font-mono whitespace-nowrap"
@@ -96,6 +92,7 @@ export default function EditorToolbar({
       <div className="flex items-center gap-0.5">
         {AI_ACTIONS.map((btn) => (
           <button
+            type="button"
             key={btn.action}
             onClick={() => onAIAction(btn.action)}
             className={`px-1.5 py-1 text-xs rounded transition-colors whitespace-nowrap ${

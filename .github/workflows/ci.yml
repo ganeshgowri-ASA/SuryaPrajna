@@ -24,7 +24,7 @@ jobs:
           node-version: 20
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm biome check .
+      - run: pnpm biome lint .
 
   typecheck:
     name: Type Check

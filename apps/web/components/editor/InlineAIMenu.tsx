@@ -1,5 +1,6 @@
 "use client";
 
+import { useProviderKeys } from "@/lib/useProviderKeys";
 import { useCallback, useState } from "react";
 
 interface InlineAIMenuProps {
@@ -7,11 +8,6 @@ interface InlineAIMenuProps {
   position: { x: number; y: number } | null;
   onClose: () => void;
   onApply: (replacement: string) => void;
-  settings: {
-    anthropicKey: string;
-    openaiKey: string;
-    perplexityKey?: string;
-  };
 }
 
 const INLINE_ACTIONS = [
@@ -59,13 +55,11 @@ export default function InlineAIMenu({
   position,
   onClose,
   onApply,
-  settings,
 }: InlineAIMenuProps) {
+  const { hasKey, headers, activeProvider } = useProviderKeys();
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [activeAction, setActiveAction] = useState<string | null>(null);
-
-  const hasKey = !!(settings.anthropicKey || settings.openaiKey || settings.perplexityKey);
 
   const executeAction = useCallback(
     async (action: (typeof INLINE_ACTIONS)[number]) => {
@@ -80,9 +74,7 @@ export default function InlineAIMenu({
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "x-anthropic-key": settings.anthropicKey,
-            "x-openai-key": settings.openaiKey,
-            "x-perplexity-key": settings.perplexityKey || "",
+            ...headers,
           },
           body: JSON.stringify({
             messages: [
@@ -105,7 +97,7 @@ export default function InlineAIMenu({
         setIsLoading(false);
       }
     },
-    [hasKey, isLoading, selectedText, settings],
+    [hasKey, isLoading, selectedText, headers],
   );
 
   if (!position || !selectedText) return null;
@@ -132,7 +124,15 @@ export default function InlineAIMenu({
       >
         {/* Header */}
         <div className="flex items-center justify-between px-3 py-2 border-b border-gray-800/60">
-          <span className="text-xs font-semibold text-amber-400">AI Actions</span>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-amber-400">AI Actions</span>
+            {hasKey && activeProvider && (
+              <span className="flex items-center gap-1 text-xs text-emerald-400">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                {activeProvider.label}
+              </span>
+            )}
+          </div>
           <button
             type="button"
             onClick={onClose}
@@ -229,7 +229,10 @@ export default function InlineAIMenu({
         {!hasKey && (
           <div className="px-3 py-2 border-t border-gray-800/40">
             <p className="text-xs text-gray-600">
-              Configure API key in Settings to use AI features.
+              <a href="/settings" className="text-amber-500 hover:text-amber-400">
+                Configure API key in Settings
+              </a>{" "}
+              to use AI features.
             </p>
           </div>
         )}

@@ -1,15 +1,10 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useProviderKeys } from "@/lib/useProviderKeys";
+import { useCallback, useState } from "react";
 
 interface RAGPanelProps {
   onInsertText: (text: string) => void;
-  settings: {
-    openaiKey: string;
-    pineconeKey: string;
-    pineconeEnv: string;
-    pineconeIndex: string;
-  };
 }
 
 interface SearchResult {
@@ -23,7 +18,8 @@ interface SearchResult {
   };
 }
 
-export default function RAGPanel({ onInsertText, settings }: RAGPanelProps) {
+export default function RAGPanel({ onInsertText }: RAGPanelProps) {
+  const { keys, headers } = useProviderKeys();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
@@ -33,7 +29,7 @@ export default function RAGPanel({ onInsertText, settings }: RAGPanelProps) {
   const [uploading, setUploading] = useState(false);
   const [tab, setTab] = useState<"search" | "upload">("search");
 
-  const isConfigured = settings.pineconeKey && settings.pineconeIndex && settings.openaiKey;
+  const isConfigured = keys.pineconeKey && keys.pineconeIndex && keys.openaiKey;
 
   const handleSearch = useCallback(async () => {
     if (!query.trim() || !isConfigured) return;
@@ -45,10 +41,7 @@ export default function RAGPanel({ onInsertText, settings }: RAGPanelProps) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-pinecone-key": settings.pineconeKey,
-          "x-pinecone-env": settings.pineconeEnv,
-          "x-pinecone-index": settings.pineconeIndex,
-          "x-openai-key": settings.openaiKey,
+          ...headers,
         },
         body: JSON.stringify({ query, topK: 5 }),
       });
@@ -64,7 +57,7 @@ export default function RAGPanel({ onInsertText, settings }: RAGPanelProps) {
     } finally {
       setLoading(false);
     }
-  }, [query, settings, isConfigured]);
+  }, [query, headers, isConfigured]);
 
   const handleUpload = useCallback(async () => {
     if (!uploadText.trim() || !isConfigured) return;
@@ -89,10 +82,7 @@ export default function RAGPanel({ onInsertText, settings }: RAGPanelProps) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-pinecone-key": settings.pineconeKey,
-          "x-pinecone-env": settings.pineconeEnv,
-          "x-pinecone-index": settings.pineconeIndex,
-          "x-openai-key": settings.openaiKey,
+          ...headers,
         },
         body: JSON.stringify({ texts: chunks, metadata }),
       });
@@ -111,7 +101,7 @@ export default function RAGPanel({ onInsertText, settings }: RAGPanelProps) {
     } finally {
       setUploading(false);
     }
-  }, [uploadText, uploadTitle, settings, isConfigured]);
+  }, [uploadText, uploadTitle, headers, isConfigured]);
 
   if (!isConfigured) {
     return (
@@ -123,7 +113,8 @@ export default function RAGPanel({ onInsertText, settings }: RAGPanelProps) {
           <div className="text-center">
             <p className="text-sm text-gray-400 mb-2">Knowledge Base Not Configured</p>
             <p className="text-xs text-gray-600">
-              Add your Pinecone API key, index name, and OpenAI key in Settings to enable semantic search over your documents.
+              Add your Pinecone API key, index name, and OpenAI key in Settings to enable semantic
+              search over your documents.
             </p>
           </div>
         </div>
@@ -139,6 +130,7 @@ export default function RAGPanel({ onInsertText, settings }: RAGPanelProps) {
         </div>
         <div className="flex gap-1">
           <button
+            type="button"
             onClick={() => setTab("search")}
             className={`text-xs px-2 py-1 rounded transition-colors ${
               tab === "search"
@@ -149,6 +141,7 @@ export default function RAGPanel({ onInsertText, settings }: RAGPanelProps) {
             Search
           </button>
           <button
+            type="button"
             onClick={() => setTab("upload")}
             className={`text-xs px-2 py-1 rounded transition-colors ${
               tab === "upload"
@@ -174,6 +167,7 @@ export default function RAGPanel({ onInsertText, settings }: RAGPanelProps) {
                 onKeyDown={(e) => e.key === "Enter" && handleSearch()}
               />
               <button
+                type="button"
                 onClick={handleSearch}
                 disabled={loading}
                 className="btn-primary text-xs py-1 px-2 disabled:opacity-50"
@@ -183,9 +177,7 @@ export default function RAGPanel({ onInsertText, settings }: RAGPanelProps) {
             </div>
           </div>
 
-          {error && (
-            <div className="px-3 py-1 text-xs text-red-400">{error}</div>
-          )}
+          {error && <div className="px-3 py-1 text-xs text-red-400">{error}</div>}
 
           <div className="flex-1 overflow-auto min-h-0">
             {results.length === 0 ? (
@@ -194,8 +186,8 @@ export default function RAGPanel({ onInsertText, settings }: RAGPanelProps) {
               </div>
             ) : (
               <div className="divide-y divide-gray-800/40">
-                {results.map((r, i) => (
-                  <div key={i} className="px-3 py-2 hover:bg-gray-800/30 group">
+                {results.map((r) => (
+                  <div key={r.id} className="px-3 py-2 hover:bg-gray-800/30 group">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1 min-w-0">
                         {r.metadata.title && (
@@ -203,14 +195,13 @@ export default function RAGPanel({ onInsertText, settings }: RAGPanelProps) {
                             {r.metadata.title}
                           </p>
                         )}
-                        <p className="text-xs text-gray-400 line-clamp-3">
-                          {r.metadata.text}
-                        </p>
+                        <p className="text-xs text-gray-400 line-clamp-3">{r.metadata.text}</p>
                         <span className="text-xs text-gray-600">
                           Score: {(r.score * 100).toFixed(1)}%
                         </span>
                       </div>
                       <button
+                        type="button"
                         onClick={() => onInsertText(r.metadata.text)}
                         className="text-xs text-amber-500 hover:text-amber-400 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
                       >
@@ -240,6 +231,7 @@ export default function RAGPanel({ onInsertText, settings }: RAGPanelProps) {
           />
           {error && <p className="text-xs text-red-400">{error}</p>}
           <button
+            type="button"
             onClick={handleUpload}
             disabled={uploading || !uploadText.trim()}
             className="btn-primary text-xs py-1.5 disabled:opacity-50"

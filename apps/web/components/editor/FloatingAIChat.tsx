@@ -1,5 +1,6 @@
 "use client";
 
+import { useProviderKeys } from "@/lib/useProviderKeys";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 interface Message {
@@ -17,11 +18,6 @@ interface FloatingAIChatProps {
   selectedText?: string;
   onInsertText?: (text: string) => void;
   onReplaceSelection?: (text: string) => void;
-  settings: {
-    anthropicKey: string;
-    openaiKey: string;
-    perplexityKey?: string;
-  };
 }
 
 const REWRITE_KEYWORDS = ["improve", "rewrite", "fix", "simplify"];
@@ -68,8 +64,8 @@ export default function FloatingAIChat({
   selectedText,
   onInsertText,
   onReplaceSelection,
-  settings,
 }: FloatingAIChatProps) {
+  const { hasKey, headers, activeProvider } = useProviderKeys();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -83,8 +79,6 @@ export default function FloatingAIChat({
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-
-  const hasKey = !!(settings.anthropicKey || settings.openaiKey || settings.perplexityKey);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: scroll on new messages
   useEffect(() => {
@@ -116,9 +110,7 @@ export default function FloatingAIChat({
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "x-anthropic-key": settings.anthropicKey,
-            "x-openai-key": settings.openaiKey,
-            "x-perplexity-key": settings.perplexityKey || "",
+            ...headers,
           },
           body: JSON.stringify({
             messages: [
@@ -164,7 +156,7 @@ export default function FloatingAIChat({
         setIsLoading(false);
       }
     },
-    [isLoading, hasKey, messages, settings, documentContent, selectedText],
+    [isLoading, hasKey, messages, headers, documentContent, selectedText],
   );
 
   const handleQuickAction = (action: (typeof QUICK_ACTIONS)[number]) => {
@@ -231,10 +223,15 @@ export default function FloatingAIChat({
               <span className="text-sm font-semibold text-white">AI Assistant</span>
             </div>
             <div className="flex items-center gap-2">
-              {hasKey ? (
-                <span className="w-2 h-2 rounded-full bg-emerald-500" />
+              {hasKey && activeProvider ? (
+                <span className="flex items-center gap-1.5 text-xs text-emerald-400">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                  {activeProvider.label}
+                </span>
               ) : (
-                <span className="text-xs text-gray-600">No API key</span>
+                <a href="/settings" className="text-xs text-gray-500 hover:text-amber-400">
+                  Configure API key
+                </a>
               )}
               <button
                 type="button"
@@ -334,7 +331,9 @@ export default function FloatingAIChat({
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder={hasKey ? "Ask about your document..." : "Configure API key first"}
+                placeholder={
+                  hasKey ? "Ask about your document..." : "Configure API key in Settings first"
+                }
                 className="flex-1 bg-gray-800/60 border border-gray-700/40 rounded-lg px-3 py-2 text-xs text-gray-200 placeholder-gray-600 resize-none focus:outline-none focus:border-amber-500/40"
                 rows={2}
                 disabled={!hasKey}

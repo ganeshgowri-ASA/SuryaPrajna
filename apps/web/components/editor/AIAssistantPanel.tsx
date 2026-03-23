@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useProviderKeys } from "@/lib/useProviderKeys";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface Message {
   role: "user" | "assistant";
@@ -13,11 +14,6 @@ interface AIAssistantPanelProps {
   selectedText?: string;
   onInsertText?: (text: string) => void;
   onReplaceSelection?: (text: string) => void;
-  settings: {
-    anthropicKey: string;
-    openaiKey: string;
-    perplexityKey: string;
-  };
 }
 
 const SLASH_COMMANDS = [
@@ -38,8 +34,8 @@ export default function AIAssistantPanel({
   selectedText,
   onInsertText,
   onReplaceSelection,
-  settings,
 }: AIAssistantPanelProps) {
+  const { hasKey, headers, activeProvider } = useProviderKeys();
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
@@ -54,8 +50,9 @@ export default function AIAssistantPanel({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  const hasKey = !!(settings.anthropicKey || settings.openaiKey);
+  // hasKey provided by useProviderKeys hook
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: scroll on new messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -64,9 +61,10 @@ export default function AIAssistantPanel({
     (cmd?: string) => {
       const base =
         "You are a scientific writing assistant for photovoltaic (PV) research. You help with writing, editing, citations, and analysis of solar energy papers.";
-      const docContext = documentContent.length > 3000
-        ? documentContent.slice(0, 3000) + "\n...(truncated)"
-        : documentContent;
+      const docContext =
+        documentContent.length > 3000
+          ? `${documentContent.slice(0, 3000)}\n...(truncated)`
+          : documentContent;
 
       const prompts: Record<string, string> = {
         "/review": `${base} Review the document for clarity, grammar, scientific accuracy, and structure. Provide specific, actionable suggestions.`,
@@ -86,9 +84,10 @@ export default function AIAssistantPanel({
         context: `\n\nCurrent document:\n${docContext}`,
       };
     },
-    [documentContent]
+    [documentContent],
   );
 
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: slash command routing needs many branches
   const sendMessage = useCallback(
     async (messageText: string) => {
       if (!messageText.trim() || isLoading) return;
@@ -104,9 +103,7 @@ export default function AIAssistantPanel({
         if (matchedCmd) {
           displayText = `${matchedCmd.icon} ${matchedCmd.label}`;
           const extra = messageText.slice(cmd.length).trim();
-          userContent = extra
-            ? `${matchedCmd.label}: ${extra}`
-            : matchedCmd.label;
+          userContent = extra ? `${matchedCmd.label}: ${extra}` : matchedCmd.label;
         }
       }
 
@@ -128,7 +125,8 @@ export default function AIAssistantPanel({
           ...prev,
           {
             role: "assistant",
-            content: "Please configure your API key (Anthropic or OpenAI) in Settings to use AI features.",
+            content:
+              "Please configure your API key (Anthropic or OpenAI) in Settings to use AI features.",
             timestamp: Date.now(),
           },
         ]);
@@ -150,8 +148,7 @@ export default function AIAssistantPanel({
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "x-anthropic-key": settings.anthropicKey,
-            "x-openai-key": settings.openaiKey,
+            ...headers,
           },
           body: JSON.stringify({
             messages: apiMessages,
@@ -184,7 +181,8 @@ export default function AIAssistantPanel({
           ...prev,
           {
             role: "assistant",
-            content: "Error: Could not reach the AI service. Please check your connection and API key.",
+            content:
+              "Error: Could not reach the AI service. Please check your connection and API key.",
             timestamp: Date.now(),
           },
         ]);
@@ -192,7 +190,7 @@ export default function AIAssistantPanel({
         setIsLoading(false);
       }
     },
-    [isLoading, hasKey, messages, settings, selectedText, buildSystemPrompt]
+    [isLoading, hasKey, messages, headers, selectedText, buildSystemPrompt],
   );
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -209,7 +207,7 @@ export default function AIAssistantPanel({
   };
 
   const insertCommand = (cmd: string) => {
-    setInput(cmd + " ");
+    setInput(`${cmd} `);
     setShowCommands(false);
     inputRef.current?.focus();
   };
@@ -223,19 +221,24 @@ export default function AIAssistantPanel({
           <span className="text-xs font-semibold text-white">AI Assistant</span>
         </div>
         <div className="flex items-center gap-1">
-          {hasKey ? (
-            <span className="text-xs text-emerald-500">Connected</span>
+          {hasKey && activeProvider ? (
+            <span className="flex items-center gap-1 text-xs text-emerald-500">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              {activeProvider.label}
+            </span>
           ) : (
-            <span className="text-xs text-gray-600">No API key</span>
+            <a href="/settings" className="text-xs text-gray-500 hover:text-amber-400">
+              Configure API key
+            </a>
           )}
         </div>
       </div>
 
       {/* Messages */}
       <div className="flex-1 overflow-auto p-3 space-y-3 min-h-0">
-        {messages.map((msg, i) => (
+        {messages.map((msg) => (
           <div
-            key={i}
+            key={msg.timestamp}
             className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
           >
             <div
@@ -248,10 +251,11 @@ export default function AIAssistantPanel({
               <div className="whitespace-pre-wrap break-words text-xs leading-relaxed">
                 {msg.content}
               </div>
-              {msg.role === "assistant" && i > 0 && (
+              {msg.role === "assistant" && msg.timestamp !== messages[0]?.timestamp && (
                 <div className="flex gap-2 mt-2 pt-1 border-t border-gray-700/30">
                   {onInsertText && (
                     <button
+                      type="button"
                       onClick={() => onInsertText(msg.content)}
                       className="text-xs text-amber-500 hover:text-amber-400 transition-colors"
                     >
@@ -260,6 +264,7 @@ export default function AIAssistantPanel({
                   )}
                   {onReplaceSelection && selectedText && (
                     <button
+                      type="button"
                       onClick={() => onReplaceSelection(msg.content)}
                       className="text-xs text-amber-500 hover:text-amber-400 transition-colors"
                     >
@@ -267,6 +272,7 @@ export default function AIAssistantPanel({
                     </button>
                   )}
                   <button
+                    type="button"
                     onClick={() => navigator.clipboard.writeText(msg.content)}
                     className="text-xs text-gray-500 hover:text-gray-400 transition-colors"
                   >
@@ -292,6 +298,7 @@ export default function AIAssistantPanel({
         <div className="mx-3 mb-1 bg-gray-900 border border-gray-700/60 rounded-lg overflow-hidden max-h-60 overflow-y-auto">
           {SLASH_COMMANDS.map((cmd) => (
             <button
+              type="button"
               key={cmd.cmd}
               onClick={() => insertCommand(cmd.cmd)}
               className="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-gray-300 hover:bg-amber-500/10 hover:text-amber-300 transition-colors"
@@ -312,12 +319,15 @@ export default function AIAssistantPanel({
             value={input}
             onChange={(e) => handleInputChange(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={hasKey ? "Ask AI... (type / for commands)" : "Configure API key in Settings..."}
+            placeholder={
+              hasKey ? "Ask AI... (type / for commands)" : "Configure API key in Settings..."
+            }
             className="input resize-none text-xs flex-1"
             rows={2}
             disabled={!hasKey}
           />
           <button
+            type="button"
             onClick={() => sendMessage(input)}
             disabled={isLoading || !input.trim() || !hasKey}
             className="btn-primary text-xs px-3 self-end disabled:opacity-50 disabled:cursor-not-allowed"

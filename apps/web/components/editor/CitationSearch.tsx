@@ -1,5 +1,6 @@
 "use client";
 
+import { useProviderKeys } from "@/lib/useProviderKeys";
 import { useCallback, useState } from "react";
 import type { Reference } from "./ReferenceManager";
 
@@ -9,7 +10,6 @@ interface CitationSearchProps {
   onAddReference: (ref: Reference) => void;
   onInsertCitation: (key: string) => void;
   existingKeys: Set<string>;
-  perplexityKey?: string;
 }
 
 interface SearchResult {
@@ -140,8 +140,10 @@ export default function CitationSearch({
   onAddReference,
   onInsertCitation,
   existingKeys,
-  perplexityKey,
 }: CitationSearchProps) {
+  const { keys, headers } = useProviderKeys();
+  const perplexityKey = keys.perplexityKey;
+
   const [query, setQuery] = useState("");
   const [source, setSource] = useState<SearchSource>("semanticscholar");
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -152,11 +154,12 @@ export default function CitationSearch({
 
   const fetchPerplexity = useCallback(
     async (q: string): Promise<SearchResult[]> => {
-      const hdrs: Record<string, string> = { "Content-Type": "application/json" };
-      if (perplexityKey) hdrs["x-perplexity-key"] = perplexityKey;
       const res = await fetch("/api/references/search", {
         method: "POST",
-        headers: hdrs,
+        headers: {
+          "Content-Type": "application/json",
+          ...headers,
+        },
         body: JSON.stringify({ query: q, source: "perplexity" }),
       });
       if (!res.ok) return [];
@@ -173,7 +176,7 @@ export default function CitationSearch({
         url: p.doi ? `https://doi.org/${p.doi}` : "",
       }));
     },
-    [perplexityKey],
+    [headers],
   );
 
   const searchPapers = useCallback(async () => {

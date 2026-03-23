@@ -1035,17 +1035,7 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:6p
                     wordCountGoal={settings.wordCountGoal || undefined}
                   />
                 )}
-                {sidebarTab === "rag" && (
-                  <RAGPanel
-                    onInsertText={handleInsertText}
-                    settings={{
-                      openaiKey: settings.openaiKey,
-                      pineconeKey: settings.pineconeKey,
-                      pineconeEnv: settings.pineconeEnv,
-                      pineconeIndex: settings.pineconeIndex,
-                    }}
-                  />
-                )}
+                {sidebarTab === "rag" && <RAGPanel onInsertText={handleInsertText} />}
               </div>
             </div>
 
@@ -1218,11 +1208,6 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:6p
                     ? (text: string) => handleContentChange(content.replace(selectedText, text))
                     : undefined
                 }
-                settings={{
-                  anthropicKey: settings.anthropicKey,
-                  openaiKey: settings.openaiKey,
-                  perplexityKey: settings.perplexityKey,
-                }}
               />
             </div>
           </>
@@ -1259,7 +1244,6 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:6p
           handleContentChange(content + citation);
         }}
         existingKeys={new Set(references.map((r) => r.key))}
-        perplexityKey={settings.perplexityKey}
       />
 
       <InlineAIMenu
@@ -1270,10 +1254,6 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:6p
           if (selectedText) {
             handleContentChange(content.replace(selectedText, replacement));
           }
-        }}
-        settings={{
-          anthropicKey: settings.anthropicKey,
-          openaiKey: settings.openaiKey,
         }}
       />
 
@@ -1286,10 +1266,6 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:6p
             ? (text: string) => handleContentChange(content.replace(selectedText, text))
             : undefined
         }
-        settings={{
-          anthropicKey: settings.anthropicKey,
-          openaiKey: settings.openaiKey,
-        }}
       />
     </div>
   );

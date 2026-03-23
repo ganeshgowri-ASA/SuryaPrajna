@@ -2,6 +2,7 @@
 
 import AIAssistantPanel from "@/components/editor/AIAssistantPanel";
 import CitationSearch from "@/components/editor/CitationSearch";
+import type { CodeMirrorEditorHandle } from "@/components/editor/CodeMirrorEditor";
 import CommentsPanel, { type Comment } from "@/components/editor/CommentsPanel";
 import EditorToolbar from "@/components/editor/EditorToolbar";
 import FigureTools from "@/components/editor/FigureTools";
@@ -48,6 +49,41 @@ const CodeMirrorEditor = dynamic(() => import("@/components/editor/CodeMirrorEdi
     </div>
   ),
 });
+
+/** Strip wrapping markdown code fences from AI responses */
+function stripMarkdownFences(text: string): string {
+  const trimmed = text.trim();
+  const fencePattern = /^```[\w]*\n?([\s\S]*?)\n?```$/;
+  const match = trimmed.match(fencePattern);
+  return match ? match[1] : trimmed;
+}
+
+/** Map AI toolbar action names to prompts */
+const AI_ACTION_PROMPTS: Record<string, { prompt: string; useSelection: boolean }> = {
+  "ai-write": {
+    prompt:
+      "Write content for this section of the document. Generate well-formatted Markdown with proper headings, paragraphs, and structure. If the document is academic, use formal tone with citations where appropriate.",
+    useSelection: false,
+  },
+  "ai-edit": {
+    prompt:
+      "Improve the following text for clarity, flow, and academic tone. Return ONLY the improved text.",
+    useSelection: true,
+  },
+  "ai-proofread": {
+    prompt:
+      "Proofread the following text. Fix all grammar, punctuation, spelling, and style issues. Return ONLY the corrected text.",
+    useSelection: true,
+  },
+  "ai-explain": {
+    prompt: "Explain the following text in simple terms. Provide a clear, concise explanation.",
+    useSelection: true,
+  },
+  "ai-summarize": {
+    prompt: "Summarize the following text concisely. Return ONLY the summary.",
+    useSelection: true,
+  },
+};
 
 type SidebarTab = "files" | "refs" | "outline" | "history" | "rag" | "comments" | "quality";
 type RightPanelMode = "preview" | "ai" | "split";
@@ -217,6 +253,7 @@ export default function EditorPage() {
   const autoSaveTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const lastAutoSave = useRef<number>(Date.now());
   const containerRef = useRef<HTMLDivElement>(null);
+  const editorRef = useRef<CodeMirrorEditorHandle | null>(null);
 
   // Get active file
   const activeFile = project.files.find((f) => f.id === project.activeFileId) || project.files[0];
@@ -228,7 +265,7 @@ export default function EditorPage() {
   const lineCount = content.split("\n").length;
 
   // Has AI key — use the shared provider-keys store (not the legacy settings fields)
-  const { hasKey: hasAIKey } = useProviderKeys();
+  const { hasKey: hasAIKey, headers } = useProviderKeys();
 
   // Persist to localStorage
   useEffect(() => {
@@ -358,12 +395,44 @@ export default function EditorPage() {
     [content, handleContentChange],
   );
 
-  // Insert text at end
-  const handleInsertText = useCallback(
+  // Insert text at cursor position in the CodeMirror editor
+  const insertAtCursor = useCallback(
     (text: string) => {
-      handleContentChange(`${content}\n${text}`);
+      const cleaned = stripMarkdownFences(text);
+      if (editorRef.current) {
+        editorRef.current.insertAtCursor(cleaned);
+      } else {
+        // Fallback: append to end
+        handleContentChange(`${content}\n${cleaned}`);
+      }
     },
     [content, handleContentChange],
+  );
+
+  // Replace current selection in the CodeMirror editor
+  const replaceSelection = useCallback(
+    (text: string) => {
+      const cleaned = stripMarkdownFences(text);
+      if (editorRef.current && selectedText) {
+        editorRef.current.replaceSelection(cleaned);
+      } else {
+        // Fallback: replace first occurrence in content
+        if (selectedText) {
+          handleContentChange(content.replace(selectedText, cleaned));
+        } else {
+          insertAtCursor(cleaned);
+        }
+      }
+    },
+    [content, handleContentChange, selectedText, insertAtCursor],
+  );
+
+  // Legacy insert at end (for components that don't need cursor position)
+  const handleInsertText = useCallback(
+    (text: string) => {
+      insertAtCursor(text);
+    },
+    [insertAtCursor],
   );
 
   // Version restore
@@ -630,23 +699,81 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:6p
     [content, handleContentChange, selectedText],
   );
 
-  // AI action from toolbar — open the AI panel and switch to AI view
+  // AI action from toolbar — call AI and insert result at cursor
   const handleAIAction = useCallback(
-    (action: string) => {
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: AI action handler with multiple action types
+    async (action: string) => {
       if (!hasAIKey) {
         setSettingsOpen(true);
         return;
       }
-      // Open AI panel + switch right panel to show AI assistant
-      setAiPanelOpen(true);
-      setRightPanelMode("ai");
 
-      // Map toolbar actions to AI-specific behaviors
+      // Literature search opens the citation panel
       if (action === "ai-literature") {
         setCitationSearchOpen(true);
+        return;
+      }
+
+      const actionConfig = AI_ACTION_PROMPTS[action];
+      if (!actionConfig) {
+        // Unknown action — just open AI panel
+        setAiPanelOpen(true);
+        setRightPanelMode("ai");
+        return;
+      }
+
+      const currentSelection = editorRef.current?.getSelectedText() || selectedText;
+
+      // If action needs selection but none exists, open AI panel instead
+      if (actionConfig.useSelection && !currentSelection) {
+        setAiPanelOpen(true);
+        setRightPanelMode("ai");
+        return;
+      }
+
+      const textContext = actionConfig.useSelection ? currentSelection : content.slice(0, 4000);
+
+      setImportNotice("AI generating...");
+
+      try {
+        const res = await fetch("/api/ai/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", ...headers },
+          body: JSON.stringify({
+            messages: [
+              {
+                role: "user",
+                content: `${actionConfig.prompt}\n\nText:\n${textContext}`,
+              },
+            ],
+            systemPrompt:
+              "You are an academic writing assistant. Return well-formatted Markdown. For tables use | Header | syntax. For math use $...$ or $$...$$. For code use ```lang blocks. Be concise and actionable.",
+          }),
+        });
+        const data = await res.json();
+        const responseText = data.content || data.error || "No response received.";
+
+        if (data.error) {
+          setImportNotice(`AI error: ${data.error}`);
+          setTimeout(() => setImportNotice(""), 5000);
+          return;
+        }
+
+        const cleaned = stripMarkdownFences(responseText);
+
+        if (actionConfig.useSelection && currentSelection) {
+          replaceSelection(cleaned);
+        } else {
+          insertAtCursor(cleaned);
+        }
+
+        setImportNotice("");
+      } catch {
+        setImportNotice("AI error: Could not reach AI service.");
+        setTimeout(() => setImportNotice(""), 5000);
       }
     },
-    [hasAIKey],
+    [hasAIKey, selectedText, content, headers, replaceSelection, insertAtCursor],
   );
 
   // Drag handlers for resizable panels
@@ -1117,10 +1244,12 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:6p
             >
               <div className="flex-1 min-h-0">
                 <CodeMirrorEditor
+                  ref={editorRef}
                   content={content}
                   onChange={handleContentChange}
                   mode={project.mode}
                   onCursorChange={(line, col) => setCursorPos({ line, col })}
+                  onSelectionChange={setSelectedText}
                 />
               </div>
 
@@ -1212,12 +1341,8 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:6p
               <AIAssistantPanel
                 documentContent={content}
                 selectedText={selectedText}
-                onInsertText={handleInsertText}
-                onReplaceSelection={
-                  selectedText
-                    ? (text: string) => handleContentChange(content.replace(selectedText, text))
-                    : undefined
-                }
+                onInsertText={insertAtCursor}
+                onReplaceSelection={selectedText ? replaceSelection : undefined}
               />
             </div>
           </>
@@ -1261,21 +1386,15 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:6p
         position={inlineAIPos}
         onClose={() => setInlineAIPos(null)}
         onApply={(replacement) => {
-          if (selectedText) {
-            handleContentChange(content.replace(selectedText, replacement));
-          }
+          replaceSelection(stripMarkdownFences(replacement));
         }}
       />
 
       <FloatingAIChat
         documentContent={content}
         selectedText={selectedText || undefined}
-        onInsertText={handleInsertText}
-        onReplaceSelection={
-          selectedText
-            ? (text: string) => handleContentChange(content.replace(selectedText, text))
-            : undefined
-        }
+        onInsertText={insertAtCursor}
+        onReplaceSelection={selectedText ? replaceSelection : undefined}
       />
     </div>
   );

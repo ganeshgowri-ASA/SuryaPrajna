@@ -54,6 +54,14 @@ interface ModelOption {
   available: boolean;
 }
 
+/** Strip wrapping markdown code fences from AI responses */
+function stripMarkdownFences(text: string): string {
+  const trimmed = text.trim();
+  const fencePattern = /^```[\w]*\n?([\s\S]*?)\n?```$/;
+  const match = trimmed.match(fencePattern);
+  return match ? match[1] : trimmed;
+}
+
 const ACCEPTED_FILE_TYPES = ".pdf,.docx,.txt,.md,.tex,.csv";
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
@@ -245,7 +253,7 @@ export default function AIAssistantPanel({
   const buildSystemPrompt = useCallback(
     (cmd?: string) => {
       const base =
-        "You are a scientific writing assistant for photovoltaic (PV) research. You help with writing, editing, citations, and analysis of solar energy papers.";
+        "You are a scientific writing assistant for photovoltaic (PV) research. You help with writing, editing, citations, and analysis of solar energy papers. Format output as proper Markdown: use | Header | for tables, $...$ or $$...$$ for math, ```lang for code blocks, and ![alt](url) for images.";
       const docContext =
         documentContent.length > 3000
           ? `${documentContent.slice(0, 3000)}\n...(truncated)`
@@ -663,7 +671,7 @@ export default function AIAssistantPanel({
                   {onInsertText && (
                     <button
                       type="button"
-                      onClick={() => onInsertText(msg.content)}
+                      onClick={() => onInsertText(stripMarkdownFences(msg.content))}
                       className="text-xs text-amber-500 hover:text-amber-400 transition-colors"
                     >
                       Insert
@@ -672,7 +680,7 @@ export default function AIAssistantPanel({
                   {onReplaceSelection && selectedText && (
                     <button
                       type="button"
-                      onClick={() => onReplaceSelection(msg.content)}
+                      onClick={() => onReplaceSelection(stripMarkdownFences(msg.content))}
                       className="text-xs text-amber-500 hover:text-amber-400 transition-colors"
                     >
                       Replace Selection

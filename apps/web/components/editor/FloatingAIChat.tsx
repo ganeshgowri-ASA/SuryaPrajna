@@ -45,6 +45,14 @@ interface ModelOption {
   available: boolean;
 }
 
+/** Strip wrapping markdown code fences from AI responses */
+function stripMarkdownFences(text: string): string {
+  const trimmed = text.trim();
+  const fencePattern = /^```[\w]*\n?([\s\S]*?)\n?```$/;
+  const match = trimmed.match(fencePattern);
+  return match ? match[1] : trimmed;
+}
+
 const REWRITE_KEYWORDS = ["improve", "rewrite", "fix", "simplify"];
 
 function isRewriteSuggestion(messageText: string, selectedText?: string): boolean {
@@ -176,6 +184,7 @@ async function readSingleFile(file: File): Promise<AttachedFile | null> {
   return { name: file.name, type: ext, content, size: file.size };
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: chat component with multiple interactive features
 export default function FloatingAIChat({
   documentContent,
   selectedText,
@@ -240,6 +249,7 @@ export default function FloatingAIChat({
   }, []);
 
   const sendMessage = useCallback(
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: message send with consensus/single provider branching
     async (messageText: string) => {
       if (!messageText.trim() || isLoading || !hasKey) return;
 
@@ -373,9 +383,9 @@ export default function FloatingAIChat({
 
   const applySuggestion = (msg: Message) => {
     if (msg.suggestion && onReplaceSelection) {
-      onReplaceSelection(msg.suggestion.replacement);
+      onReplaceSelection(stripMarkdownFences(msg.suggestion.replacement));
     } else if (onInsertText) {
-      onInsertText(msg.content);
+      onInsertText(stripMarkdownFences(msg.content));
     }
   };
 
@@ -543,6 +553,7 @@ export default function FloatingAIChat({
 
           {/* Messages */}
           <div className="flex-1 overflow-auto p-3 space-y-3 min-h-0">
+            {/* biome-ignore lint/complexity/noExcessiveCognitiveComplexity: message rendering with multiple content types */}
             {messages.map((msg) => (
               <div
                 key={msg.timestamp}
@@ -643,7 +654,7 @@ export default function FloatingAIChat({
                         onInsertText && (
                           <button
                             type="button"
-                            onClick={() => onInsertText(msg.content)}
+                            onClick={() => onInsertText(stripMarkdownFences(msg.content))}
                             className="text-xs text-amber-500 hover:text-amber-400 transition-colors"
                           >
                             Insert

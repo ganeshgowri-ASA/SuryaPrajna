@@ -11,7 +11,16 @@ import {
 } from "@/lib/providers";
 import { useCallback, useEffect, useState } from "react";
 
-const PROVIDERS: ProviderName[] = ["anthropic", "openai", "perplexity", "pinecone"];
+const PROVIDERS: ProviderName[] = [
+  "anthropic",
+  "openai",
+  "perplexity",
+  "openrouter",
+  "deepseek",
+  "groq",
+  "ollama",
+  "pinecone",
+];
 
 function StatusBadge({ status }: { status: ProviderStatus | undefined }) {
   if (!status) {
@@ -50,6 +59,14 @@ export default function SettingsPage() {
     pineconeKey: "",
     pineconeEnv: "",
     pineconeIndex: "",
+    openrouterKey: "",
+    openrouterModel: "anthropic/claude-sonnet-4-20250514",
+    deepseekKey: "",
+    deepseekModel: "deepseek-chat",
+    groqKey: "",
+    groqModel: "llama-3.3-70b-versatile",
+    ollamaModel: "llama3",
+    ollamaBaseUrl: "http://localhost:11434",
   });
   const [statuses, setStatuses] = useState<Record<string, ProviderStatus>>({});
   const [testing, setTesting] = useState<Record<string, boolean>>({});
@@ -112,23 +129,6 @@ export default function SettingsPage() {
     [keys],
   );
 
-  const testAll = useCallback(async () => {
-    setTestingAll(true);
-    const providers = PROVIDERS.filter((p) => {
-      if (p === "anthropic") return !!keys.anthropicKey;
-      if (p === "openai") return !!keys.openaiKey;
-      if (p === "perplexity") return !!keys.perplexityKey;
-      if (p === "pinecone") return !!keys.pineconeKey;
-      return false;
-    });
-    await Promise.all(providers.map((p) => testProvider(p)));
-    setTestingAll(false);
-  }, [keys, testProvider]);
-
-  const toggleShowKey = (provider: string) => {
-    setShowKeys((prev) => ({ ...prev, [provider]: !prev[provider] }));
-  };
-
   const getKeyValue = (provider: ProviderName): string => {
     switch (provider) {
       case "anthropic":
@@ -139,7 +139,38 @@ export default function SettingsPage() {
         return keys.perplexityKey;
       case "pinecone":
         return keys.pineconeKey;
+      case "openrouter":
+        return keys.openrouterKey;
+      case "deepseek":
+        return keys.deepseekKey;
+      case "groq":
+        return keys.groqKey;
+      case "ollama":
+        return "";
     }
+  };
+
+  const testAll = useCallback(async () => {
+    setTestingAll(true);
+    const keyMap: Record<string, string> = {
+      anthropic: keys.anthropicKey,
+      openai: keys.openaiKey,
+      perplexity: keys.perplexityKey,
+      pinecone: keys.pineconeKey,
+      openrouter: keys.openrouterKey,
+      deepseek: keys.deepseekKey,
+      groq: keys.groqKey,
+    };
+    const providers = PROVIDERS.filter((p) => {
+      if (p === "ollama") return true;
+      return !!keyMap[p];
+    });
+    await Promise.all(providers.map((p) => testProvider(p)));
+    setTestingAll(false);
+  }, [keys, testProvider]);
+
+  const toggleShowKey = (provider: string) => {
+    setShowKeys((prev) => ({ ...prev, [provider]: !prev[provider] }));
   };
 
   const setKeyValue = (provider: ProviderName, value: string) => {
@@ -148,6 +179,10 @@ export default function SettingsPage() {
       openai: "openaiKey",
       perplexity: "perplexityKey",
       pinecone: "pineconeKey",
+      openrouter: "openrouterKey",
+      deepseek: "deepseekKey",
+      groq: "groqKey",
+      ollama: "ollamaBaseUrl",
     };
     updateKey(fieldMap[provider], value);
   };
@@ -160,6 +195,14 @@ export default function SettingsPage() {
         return keys.openaiModel;
       case "perplexity":
         return keys.perplexityModel;
+      case "openrouter":
+        return keys.openrouterModel;
+      case "deepseek":
+        return keys.deepseekModel;
+      case "groq":
+        return keys.groqModel;
+      case "ollama":
+        return keys.ollamaModel;
       default:
         return "";
     }
@@ -170,12 +213,21 @@ export default function SettingsPage() {
       anthropic: "anthropicModel",
       openai: "openaiModel",
       perplexity: "perplexityModel",
+      openrouter: "openrouterModel",
+      deepseek: "deepseekModel",
+      groq: "groqModel",
+      ollama: "ollamaModel",
     };
     const field = fieldMap[provider];
     if (field) updateKey(field, value);
   };
 
-  const connectedCount = PROVIDERS.filter((p) => getKeyValue(p)).length;
+  const hasProviderConfigured = (p: ProviderName): boolean => {
+    if (p === "ollama") return true;
+    return !!getKeyValue(p);
+  };
+
+  const connectedCount = PROVIDERS.filter((p) => hasProviderConfigured(p)).length;
   const lastTestedTime = Object.values(statuses).reduce((latest, s) => {
     if (s.lastTested && s.lastTested > latest) return s.lastTested;
     return latest;
@@ -198,7 +250,7 @@ export default function SettingsPage() {
             <div>
               <h2 className="text-lg font-semibold text-white">Connection Status</h2>
               <p className="text-xs text-gray-500 mt-0.5">
-                {connectedCount}/4 providers configured
+                {connectedCount}/{PROVIDERS.length} providers configured
                 {lastTestedTime > 0 && (
                   <> &middot; Last tested {new Date(lastTestedTime).toLocaleTimeString()}</>
                 )}
@@ -207,7 +259,7 @@ export default function SettingsPage() {
             <button
               type="button"
               onClick={testAll}
-              disabled={testingAll || connectedCount === 0}
+              disabled={testingAll}
               className="px-4 py-2 bg-amber-500/20 text-amber-400 rounded-lg text-sm font-medium hover:bg-amber-500/30 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {testingAll ? "Testing..." : "Test All Connections"}
@@ -217,7 +269,7 @@ export default function SettingsPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {PROVIDERS.map((provider) => {
               const info = PROVIDER_INFO[provider];
-              const hasKey = !!getKeyValue(provider);
+              const hasKey = hasProviderConfigured(provider);
               const status = statuses[provider];
               return (
                 <div
@@ -256,9 +308,10 @@ export default function SettingsPage() {
           {PROVIDERS.map((provider) => {
             const info = PROVIDER_INFO[provider];
             const models = PROVIDER_MODELS[provider];
-            const hasKey = !!getKeyValue(provider);
+            const hasKey = hasProviderConfigured(provider);
             const status = statuses[provider];
             const isTesting = testing[provider];
+            const needsApiKey = provider !== "ollama";
 
             return (
               <div
@@ -279,42 +332,74 @@ export default function SettingsPage() {
 
                 {/* Card body */}
                 <div className="px-6 py-4 space-y-4">
-                  {/* API Key */}
-                  <div>
-                    <label
-                      className="block text-xs text-gray-400 mb-1.5 font-medium"
-                      htmlFor={`key-${provider}`}
-                    >
-                      API Key
-                    </label>
-                    <div className="flex gap-2">
-                      <div className="flex-1 relative">
+                  {/* API Key (not for Ollama) */}
+                  {needsApiKey && (
+                    <div>
+                      <label
+                        className="block text-xs text-gray-400 mb-1.5 font-medium"
+                        htmlFor={`key-${provider}`}
+                      >
+                        API Key
+                      </label>
+                      <div className="flex gap-2">
+                        <div className="flex-1 relative">
+                          <input
+                            id={`key-${provider}`}
+                            type={showKeys[provider] ? "text" : "password"}
+                            value={getKeyValue(provider)}
+                            onChange={(e) => setKeyValue(provider, e.target.value)}
+                            placeholder={info.placeholder}
+                            className="w-full bg-gray-800/60 border border-gray-700/40 rounded-lg px-3 py-2 text-sm text-gray-200 placeholder-gray-600 focus:outline-none focus:border-amber-500/40 pr-10 font-mono"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => toggleShowKey(provider)}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 text-xs"
+                          >
+                            {showKeys[provider] ? "Hide" : "Show"}
+                          </button>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => testProvider(provider)}
+                          disabled={!hasKey || isTesting}
+                          className="px-4 py-2 bg-gray-800 text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap border border-gray-700/40"
+                        >
+                          {isTesting ? "Testing..." : "Test"}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Ollama base URL + test button */}
+                  {provider === "ollama" && (
+                    <div>
+                      <label
+                        className="block text-xs text-gray-400 mb-1.5 font-medium"
+                        htmlFor="ollama-base-url"
+                      >
+                        Base URL
+                      </label>
+                      <div className="flex gap-2">
                         <input
-                          id={`key-${provider}`}
-                          type={showKeys[provider] ? "text" : "password"}
-                          value={getKeyValue(provider)}
-                          onChange={(e) => setKeyValue(provider, e.target.value)}
-                          placeholder={info.placeholder}
-                          className="w-full bg-gray-800/60 border border-gray-700/40 rounded-lg px-3 py-2 text-sm text-gray-200 placeholder-gray-600 focus:outline-none focus:border-amber-500/40 pr-10 font-mono"
+                          id="ollama-base-url"
+                          type="text"
+                          value={keys.ollamaBaseUrl}
+                          onChange={(e) => updateKey("ollamaBaseUrl", e.target.value)}
+                          placeholder="http://localhost:11434"
+                          className="flex-1 bg-gray-800/60 border border-gray-700/40 rounded-lg px-3 py-2 text-sm text-gray-200 placeholder-gray-600 focus:outline-none focus:border-amber-500/40 font-mono"
                         />
                         <button
                           type="button"
-                          onClick={() => toggleShowKey(provider)}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 text-xs"
+                          onClick={() => testProvider(provider)}
+                          disabled={isTesting}
+                          className="px-4 py-2 bg-gray-800 text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap border border-gray-700/40"
                         >
-                          {showKeys[provider] ? "Hide" : "Show"}
+                          {isTesting ? "Testing..." : "Test"}
                         </button>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => testProvider(provider)}
-                        disabled={!hasKey || isTesting}
-                        className="px-4 py-2 bg-gray-800 text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap border border-gray-700/40"
-                      >
-                        {isTesting ? "Testing..." : "Test"}
-                      </button>
                     </div>
-                  </div>
+                  )}
 
                   {/* Model selector (not for Pinecone) */}
                   {models.length > 0 && (
@@ -407,6 +492,10 @@ export default function SettingsPage() {
                 provider: "Pinecone + OpenAI Embeddings",
                 icon: "🌲",
               },
+              { task: "Multi-model Access", provider: "OpenRouter (200+ models)", icon: "🔀" },
+              { task: "Fast Inference", provider: "Groq (open-source models)", icon: "⚡" },
+              { task: "Cost-effective Chat", provider: "DeepSeek", icon: "🌊" },
+              { task: "Local / Offline", provider: "Ollama (no API key)", icon: "🏠" },
             ].map((r) => (
               <div
                 key={r.task}
@@ -433,6 +522,10 @@ export default function SettingsPage() {
             <p>ANTHROPIC_API_KEY=sk-ant-...</p>
             <p>OPENAI_API_KEY=sk-...</p>
             <p>PERPLEXITY_API_KEY=pplx-...</p>
+            <p>OPENROUTER_API_KEY=sk-or-v1-...</p>
+            <p>DEEPSEEK_API_KEY=sk-...</p>
+            <p>GROQ_API_KEY=gsk_...</p>
+            <p>OLLAMA_BASE_URL=http://localhost:11434</p>
             <p>PINECONE_API_KEY=pc-...</p>
             <p>PINECONE_ENVIRONMENT=us-east-1-aws</p>
             <p>PINECONE_INDEX=suryaprajna-index</p>

@@ -1,7 +1,15 @@
 // SuryaPrajna — lib/providers.ts
 // Provider router, key storage, and connection management.
 
-export type ProviderName = "anthropic" | "openai" | "perplexity" | "pinecone";
+export type ProviderName =
+  | "anthropic"
+  | "openai"
+  | "perplexity"
+  | "pinecone"
+  | "openrouter"
+  | "deepseek"
+  | "groq"
+  | "ollama";
 
 export type TaskType = "chat" | "research" | "writing" | "embedding" | "rag";
 
@@ -11,6 +19,8 @@ export interface ProviderConfig {
   // Pinecone-specific
   environment?: string;
   indexName?: string;
+  // Ollama-specific
+  baseUrl?: string;
 }
 
 export interface ProviderStatus {
@@ -30,6 +40,14 @@ export interface AllProviderKeys {
   pineconeKey: string;
   pineconeEnv: string;
   pineconeIndex: string;
+  openrouterKey: string;
+  openrouterModel: string;
+  deepseekKey: string;
+  deepseekModel: string;
+  groqKey: string;
+  groqModel: string;
+  ollamaModel: string;
+  ollamaBaseUrl: string;
 }
 
 const STORAGE_KEY = "suryaprajna_provider_keys";
@@ -73,6 +91,14 @@ const DEFAULT_KEYS: AllProviderKeys = {
   pineconeKey: "",
   pineconeEnv: "",
   pineconeIndex: "",
+  openrouterKey: "",
+  openrouterModel: "anthropic/claude-sonnet-4-20250514",
+  deepseekKey: "",
+  deepseekModel: "deepseek-chat",
+  groqKey: "",
+  groqModel: "llama-3.3-70b-versatile",
+  ollamaModel: "llama3",
+  ollamaBaseUrl: "http://localhost:11434",
 };
 
 // Sensitive fields that should be obfuscated
@@ -81,6 +107,9 @@ const SENSITIVE_FIELDS: (keyof AllProviderKeys)[] = [
   "openaiKey",
   "perplexityKey",
   "pineconeKey",
+  "openrouterKey",
+  "deepseekKey",
+  "groqKey",
 ];
 
 export function saveProviderKeys(keys: AllProviderKeys): void {
@@ -124,14 +153,18 @@ export function getProviderHeaders(keys: AllProviderKeys): Record<string, string
     "x-pinecone-key": keys.pineconeKey,
     "x-pinecone-env": keys.pineconeEnv,
     "x-pinecone-index": keys.pineconeIndex,
+    "x-openrouter-key": keys.openrouterKey,
+    "x-deepseek-key": keys.deepseekKey,
+    "x-groq-key": keys.groqKey,
+    "x-ollama-base-url": keys.ollamaBaseUrl || "http://localhost:11434",
   };
 }
 
 // Priority order for each task type
 const TASK_PRIORITY: Record<TaskType, ProviderName[]> = {
-  research: ["perplexity", "anthropic", "openai"],
-  writing: ["anthropic", "openai", "perplexity"],
-  chat: ["anthropic", "openai", "perplexity"],
+  research: ["perplexity", "anthropic", "openai", "openrouter", "deepseek", "groq", "ollama"],
+  writing: ["anthropic", "openai", "openrouter", "deepseek", "groq", "perplexity", "ollama"],
+  chat: ["anthropic", "openai", "openrouter", "deepseek", "groq", "perplexity", "ollama"],
   embedding: ["openai"],
   rag: ["pinecone"],
 };
@@ -148,7 +181,7 @@ export function routeProvider(
   // If user explicitly chose a provider and has a key for it, use it
   if (preferredProvider) {
     const key = getKeyForProvider(preferredProvider, keys);
-    if (key) {
+    if (key || preferredProvider === "ollama") {
       return {
         provider: preferredProvider,
         model: getModelForProvider(preferredProvider, keys),
@@ -168,7 +201,7 @@ export function routeProvider(
   const priorities = TASK_PRIORITY[task];
   for (const provider of priorities) {
     const key = getKeyForProvider(provider, keys);
-    if (key) {
+    if (key || provider === "ollama") {
       const model =
         task === "embedding" ? "text-embedding-3-small" : getModelForProvider(provider, keys);
       return { provider, model };
@@ -188,6 +221,14 @@ function getKeyForProvider(provider: ProviderName, keys: AllProviderKeys): strin
       return keys.perplexityKey;
     case "pinecone":
       return keys.pineconeKey;
+    case "openrouter":
+      return keys.openrouterKey;
+    case "deepseek":
+      return keys.deepseekKey;
+    case "groq":
+      return keys.groqKey;
+    case "ollama":
+      return "";
   }
 }
 
@@ -201,6 +242,14 @@ function getModelForProvider(provider: ProviderName, keys: AllProviderKeys): str
       return keys.perplexityModel;
     case "pinecone":
       return "";
+    case "openrouter":
+      return keys.openrouterModel;
+    case "deepseek":
+      return keys.deepseekModel;
+    case "groq":
+      return keys.groqModel;
+    case "ollama":
+      return keys.ollamaModel;
   }
 }
 
@@ -224,6 +273,27 @@ export const PROVIDER_MODELS: Record<ProviderName, { value: string; label: strin
     { value: "sonar-reasoning", label: "Sonar Reasoning" },
   ],
   pinecone: [],
+  openrouter: [
+    { value: "anthropic/claude-sonnet-4-20250514", label: "Claude Sonnet 4" },
+    { value: "openai/gpt-4o", label: "GPT-4o" },
+    { value: "google/gemini-2.5-pro-preview", label: "Gemini 2.5 Pro" },
+    { value: "meta-llama/llama-3.3-70b-instruct", label: "Llama 3.3 70B" },
+  ],
+  deepseek: [
+    { value: "deepseek-chat", label: "DeepSeek Chat (V3)" },
+    { value: "deepseek-reasoner", label: "DeepSeek Reasoner (R1)" },
+  ],
+  groq: [
+    { value: "llama-3.3-70b-versatile", label: "Llama 3.3 70B" },
+    { value: "llama-3.1-8b-instant", label: "Llama 3.1 8B" },
+    { value: "mixtral-8x7b-32768", label: "Mixtral 8x7B" },
+  ],
+  ollama: [
+    { value: "llama3", label: "Llama 3" },
+    { value: "llama3.1", label: "Llama 3.1" },
+    { value: "mistral", label: "Mistral" },
+    { value: "codellama", label: "Code Llama" },
+  ],
 };
 
 export const PROVIDER_INFO: Record<
@@ -253,5 +323,29 @@ export const PROVIDER_INFO: Record<
     icon: "🌲",
     description: "RAG knowledge base, semantic search over uploaded papers",
     placeholder: "pc-...",
+  },
+  openrouter: {
+    label: "OpenRouter",
+    icon: "🔀",
+    description: "Unified API gateway to 200+ models from multiple providers",
+    placeholder: "sk-or-v1-...",
+  },
+  deepseek: {
+    label: "DeepSeek",
+    icon: "🌊",
+    description: "Cost-effective reasoning and chat models",
+    placeholder: "sk-...",
+  },
+  groq: {
+    label: "Groq",
+    icon: "⚡",
+    description: "Ultra-fast inference for open-source models",
+    placeholder: "gsk_...",
+  },
+  ollama: {
+    label: "Ollama (Local)",
+    icon: "🏠",
+    description: "Run open-source models locally, no API key needed",
+    placeholder: "",
   },
 };

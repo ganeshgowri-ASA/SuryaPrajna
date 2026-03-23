@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useCallback, useState } from "react";
 
 export interface ProjectFile {
   id: string;
@@ -445,6 +445,281 @@ $^1$[Affiliation 1], $^2$[Affiliation 2]
 
 ## 8. Conclusion
 `,
+    "ieee-journal": `# [Paper Title]
+
+**Authors:** [Author 1], [Author 2]
+**Journal:** IEEE Transactions on [Topic]
+**Date:** ${new Date().toISOString().split("T")[0]}
+
+---
+
+## Abstract
+
+[200-250 word abstract covering background, methods, results, and conclusions]
+
+**Index Terms:** photovoltaic, solar energy, [term 3], [term 4]
+
+## I. Introduction
+
+[Background, motivation, and contribution statement]
+
+## II. Related Work
+
+[Literature survey and positioning of this work]
+
+## III. System Model / Problem Formulation
+
+## IV. Proposed Approach
+
+## V. Experimental Setup
+
+## VI. Results and Analysis
+
+## VII. Discussion
+
+## VIII. Conclusion
+
+## Acknowledgments
+
+## References
+`,
+    "elsevier-journal": `# [Article Title]
+
+**Authors:** [Author 1]$^{a,*}$, [Author 2]$^{b}$
+$^a$[Department, University, City, Country]
+$^b$[Department, University, City, Country]
+*Corresponding author: [email]
+
+---
+
+## Highlights
+
+- [Key finding 1 - max 85 characters]
+- [Key finding 2 - max 85 characters]
+- [Key finding 3 - max 85 characters]
+- [Key finding 4 - max 85 characters]
+
+## Graphical Abstract
+
+[Description of graphical abstract]
+
+## Abstract
+
+[Structured or unstructured abstract, 150-300 words]
+
+**Keywords:** photovoltaic; solar energy; [keyword 3]; [keyword 4]; [keyword 5]
+
+## 1. Introduction
+
+## 2. Materials and Methods
+
+### 2.1. Materials
+### 2.2. Characterization
+### 2.3. Data Analysis
+
+## 3. Results
+
+## 4. Discussion
+
+## 5. Conclusions
+
+## CRediT Author Statement
+
+**[Author 1]:** Conceptualization, Methodology, Writing - Original Draft
+**[Author 2]:** Supervision, Writing - Review & Editing
+
+## Declaration of Competing Interest
+
+The authors declare that they have no known competing financial interests.
+
+## Data Availability
+
+[Data availability statement]
+
+## Acknowledgments
+
+## References
+`,
+    "springer-nature": `# [Article Title]
+
+**Authors:** [Author 1]$^1$ & [Author 2]$^2$
+$^1$[Affiliation 1]
+$^2$[Affiliation 2]
+
+---
+
+## Abstract
+
+[150-250 words summarizing the study]
+
+## Introduction
+
+[Background and objectives]
+
+## Methods
+
+### Study Design
+### Data Collection
+### Analysis
+
+## Results
+
+## Discussion
+
+## Data Availability Statement
+
+The datasets generated and analysed during the current study are available from the corresponding author on reasonable request.
+
+## Code Availability
+
+## Author Contributions
+
+## Competing Interests
+
+The authors declare no competing interests.
+
+## References
+`,
+    "mdpi-journal": `# [Article Title]
+
+**Authors:** [FirstName1 LastName1]$^{1,*}$, [FirstName2 LastName2]$^{2}$
+
+$^1$[Department, University, City ZIP, Country]
+$^2$[Department, University, City ZIP, Country]
+*Correspondence: [email]
+
+---
+
+## Abstract
+
+[Single paragraph, 200 words max]
+
+**Keywords:** [keyword 1]; [keyword 2]; [keyword 3]; [keyword 4]; [keyword 5]
+
+## 1. Introduction
+
+## 2. Materials and Methods
+
+## 3. Results
+
+## 4. Discussion
+
+## 5. Conclusions
+
+**Author Contributions:** Conceptualization, [Author 1]; methodology, [Author 1] and [Author 2]; writing—original draft preparation, [Author 1]; writing—review and editing, [Author 2]. All authors have read and agreed to the published version of the manuscript.
+
+**Funding:** [Funding information]
+
+**Institutional Review Board Statement:** Not applicable.
+
+**Informed Consent Statement:** Not applicable.
+
+**Data Availability Statement:** Data is contained within the article.
+
+**Conflicts of Interest:** The authors declare no conflict of interest.
+
+## References
+`,
+    "pv-datasheet": `# PV Module Technical Datasheet
+
+## [Manufacturer Name] - [Model Number]
+
+---
+
+### Module Specifications
+
+| Parameter | Value |
+|-----------|-------|
+| Cell Technology | Monocrystalline PERC / TOPCon / HJT |
+| Number of Cells | 72 (6x12) |
+| Module Dimensions | mm × mm × mm |
+| Weight | kg |
+| Glass | 3.2mm tempered, anti-reflective |
+| Frame | Anodized aluminum |
+| Junction Box | IP68 |
+| Connector | MC4 Compatible |
+
+### Electrical Characteristics (STC: 1000 W/m², 25°C, AM1.5)
+
+| Parameter | Value | Unit |
+|-----------|-------|------|
+| Maximum Power (Pmax) | | Wp |
+| Maximum Power Voltage (Vmpp) | | V |
+| Maximum Power Current (Impp) | | A |
+| Open Circuit Voltage (Voc) | | V |
+| Short Circuit Current (Isc) | | A |
+| Module Efficiency | | % |
+| Power Tolerance | 0/+5 | W |
+
+### Temperature Coefficients
+
+| Parameter | Value | Unit |
+|-----------|-------|------|
+| Pmax | | %/°C |
+| Voc | | %/°C |
+| Isc | | %/°C |
+
+### NOCT Conditions (800 W/m², 20°C, AM1.5, 1 m/s)
+
+| Parameter | Value | Unit |
+|-----------|-------|------|
+| NOCT | | °C |
+| Maximum Power (Pmax) | | Wp |
+| Vmpp | | V |
+| Impp | | A |
+
+### Mechanical & Operating Parameters
+
+| Parameter | Value |
+|-----------|-------|
+| Max System Voltage | 1500 V DC |
+| Operating Temperature | -40°C to +85°C |
+| Max Series Fuse Rating | A |
+| Wind Load | Pa (front) / Pa (rear) |
+| Snow Load | Pa |
+| Hail Resistance | 25mm at 23 m/s |
+
+### Certifications
+
+- IEC 61215 / IEC 61730
+- UL 61730
+- MCS (UK)
+- CEC Listed (Australia)
+
+### Warranty
+
+- Product Warranty: 12 years
+- Linear Power Warranty: 25/30 years (≥84.8% at year 25)
+`,
+    "technical-note": `# Technical Note: [Brief Title]
+
+**Authors:** [Author(s)]
+**Date:** ${new Date().toISOString().split("T")[0]}
+
+---
+
+## Summary
+
+[2-3 sentence summary of the key finding or observation]
+
+## Background
+
+[Brief context, 1-2 paragraphs]
+
+## Method / Observation
+
+[Description of what was done or observed]
+
+## Results
+
+[Key data and findings]
+
+## Significance
+
+[Why this matters and implications]
+
+## References
+`,
   };
   return templates[templateId] || templates["pv-research"];
 }
@@ -559,8 +834,7 @@ export default function ProjectManager({
     (fileId: string) => {
       if (project.files.length <= 1) return;
       const newFiles = project.files.filter((f) => f.id !== fileId);
-      const newActiveId =
-        project.activeFileId === fileId ? newFiles[0].id : project.activeFileId;
+      const newActiveId = project.activeFileId === fileId ? newFiles[0].id : project.activeFileId;
       onProjectChange({
         ...project,
         files: newFiles,
@@ -568,7 +842,7 @@ export default function ProjectManager({
         updatedAt: Date.now(),
       });
     },
-    [project, onProjectChange]
+    [project, onProjectChange],
   );
 
   const startRename = (file: ProjectFile) => {
@@ -584,7 +858,7 @@ export default function ProjectManager({
     onProjectChange({
       ...project,
       files: project.files.map((f) =>
-        f.id === renamingId ? { ...f, name: renameValue.trim() } : f
+        f.id === renamingId ? { ...f, name: renameValue.trim() } : f,
       ),
       updatedAt: Date.now(),
     });
@@ -605,10 +879,9 @@ export default function ProjectManager({
       {/* Header */}
       <div className="px-3 py-2 border-b border-gray-800/60 flex-shrink-0">
         <div className="flex items-center justify-between mb-1">
-          <span className="text-xs font-semibold text-white truncate">
-            {project.name}
-          </span>
+          <span className="text-xs font-semibold text-white truncate">{project.name}</span>
           <button
+            type="button"
             onClick={() => setShowTemplates(!showTemplates)}
             className="text-xs text-amber-400 hover:text-amber-300"
           >
@@ -616,8 +889,7 @@ export default function ProjectManager({
           </button>
         </div>
         <span className="text-xs text-gray-600">
-          {project.mode === "latex" ? "LaTeX" : "Markdown"} •{" "}
-          {project.files.length} files
+          {project.mode === "latex" ? "LaTeX" : "Markdown"} • {project.files.length} files
         </span>
       </div>
 
@@ -628,6 +900,7 @@ export default function ProjectManager({
           <div className="space-y-1">
             {TEMPLATES.map((t) => (
               <button
+                type="button"
                 key={t.id}
                 onClick={() => {
                   onNewProject(t.id);
@@ -636,9 +909,7 @@ export default function ProjectManager({
                 className="w-full text-left px-2 py-1.5 rounded hover:bg-amber-500/10 transition-colors group"
               >
                 <span className="text-sm">{t.icon}</span>{" "}
-                <span className="text-xs text-white group-hover:text-amber-300">
-                  {t.name}
-                </span>
+                <span className="text-xs text-white group-hover:text-amber-300">{t.name}</span>
                 <p className="text-xs text-gray-600 ml-6">{t.description}</p>
               </button>
             ))}
@@ -658,6 +929,7 @@ export default function ProjectManager({
                   : "text-gray-400 hover:bg-gray-800/40 hover:text-gray-200"
               }`}
               onClick={() => onFileSelect(file.id)}
+              onKeyDown={(e) => e.key === "Enter" && onFileSelect(file.id)}
             >
               <span className="text-xs">{getFileIcon(file)}</span>
               {renamingId === file.id ? (
@@ -671,7 +943,6 @@ export default function ProjectManager({
                     if (e.key === "Escape") setRenamingId(null);
                   }}
                   className="bg-gray-800 border border-gray-600 rounded px-1 py-0 text-xs text-white flex-1 outline-none"
-                  autoFocus
                   onClick={(e) => e.stopPropagation()}
                 />
               ) : (
@@ -687,6 +958,7 @@ export default function ProjectManager({
               )}
               {project.files.length > 1 && (
                 <button
+                  type="button"
                   onClick={(e) => {
                     e.stopPropagation();
                     deleteFile(file.id);
@@ -704,6 +976,7 @@ export default function ProjectManager({
       {/* Actions */}
       <div className="px-3 py-2 border-t border-gray-800/60 space-y-1 flex-shrink-0">
         <button
+          type="button"
           onClick={addFile}
           className="w-full text-left text-xs text-gray-400 hover:text-amber-300 px-2 py-1 rounded hover:bg-gray-800/40"
         >
@@ -711,24 +984,28 @@ export default function ProjectManager({
         </button>
         <div className="flex gap-1">
           <button
+            type="button"
             onClick={() => onExport("md")}
             className="flex-1 text-xs text-gray-500 hover:text-gray-300 px-2 py-1 rounded hover:bg-gray-800/40"
           >
             .md
           </button>
           <button
+            type="button"
             onClick={() => onExport("tex")}
             className="flex-1 text-xs text-gray-500 hover:text-gray-300 px-2 py-1 rounded hover:bg-gray-800/40"
           >
             .tex
           </button>
           <button
+            type="button"
             onClick={() => onExport("pdf")}
             className="flex-1 text-xs text-gray-500 hover:text-gray-300 px-2 py-1 rounded hover:bg-gray-800/40"
           >
             PDF
           </button>
           <button
+            type="button"
             onClick={() => onExport("html")}
             className="flex-1 text-xs text-gray-500 hover:text-gray-300 px-2 py-1 rounded hover:bg-gray-800/40"
           >

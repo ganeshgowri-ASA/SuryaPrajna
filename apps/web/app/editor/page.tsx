@@ -1,9 +1,13 @@
 "use client";
 
 import AIAssistantPanel from "@/components/editor/AIAssistantPanel";
+import CitationSearch from "@/components/editor/CitationSearch";
+import CommentsPanel, { type Comment } from "@/components/editor/CommentsPanel";
 import EditorToolbar from "@/components/editor/EditorToolbar";
 import FigureTools from "@/components/editor/FigureTools";
+import FloatingAIChat from "@/components/editor/FloatingAIChat";
 import ImportDialog from "@/components/editor/ImportDialog";
+import InlineAIMenu from "@/components/editor/InlineAIMenu";
 import OutlinePanel from "@/components/editor/OutlinePanel";
 import PreviewPanel from "@/components/editor/PreviewPanel";
 import ProblemsPanel from "@/components/editor/ProblemsPanel";
@@ -20,6 +24,7 @@ import SettingsPanel, {
 } from "@/components/editor/SettingsPanel";
 import TemplatesGallery from "@/components/editor/TemplatesGallery";
 import VersionHistory, { type Version } from "@/components/editor/VersionHistory";
+import WritingQuality from "@/components/editor/WritingQuality";
 import {
   type ImportResult,
   latexToMarkdown,
@@ -43,7 +48,7 @@ const CodeMirrorEditor = dynamic(() => import("@/components/editor/CodeMirrorEdi
   ),
 });
 
-type SidebarTab = "files" | "refs" | "outline" | "history" | "rag";
+type SidebarTab = "files" | "refs" | "outline" | "history" | "rag" | "comments" | "quality";
 type RightPanelMode = "preview" | "ai" | "split";
 
 function createDefaultProject(): Project {
@@ -198,6 +203,12 @@ export default function EditorPage() {
   const [isDraggingAI, setIsDraggingAI] = useState(false);
   const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "unsaved">("saved");
   const [importOpen, setImportOpen] = useState(false);
+  const [comments, setComments] = useState<Comment[]>(() =>
+    loadFromStorage("sp-editor-comments", []),
+  );
+  const [citationSearchOpen, setCitationSearchOpen] = useState(false);
+  const [inlineAIPos, setInlineAIPos] = useState<{ x: number; y: number } | null>(null);
+  const [twoColumnPreview, setTwoColumnPreview] = useState(false);
   const [isDragOverEditor, setIsDragOverEditor] = useState(false);
   const [importNotice, setImportNotice] = useState("");
 
@@ -239,22 +250,31 @@ export default function EditorPage() {
     saveToStorage("sp-editor-settings", settings);
   }, [settings]);
 
-  // Auto-save versions
+  useEffect(() => {
+    saveToStorage("sp-editor-comments", comments);
+  }, [comments]);
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: interval needs to restart when settings change
   useEffect(() => {
     autoSaveTimer.current = setInterval(() => {
       const now = Date.now();
-      if (now - lastAutoSave.current >= settings.autoSaveInterval * 60 * 1000) {
+      if (now - lastAutoSave.current >= 30000) {
         lastAutoSave.current = now;
-        setVersions((prev) => [
-          ...prev,
-          {
-            id: `auto-${now}`,
-            label: "Auto-save",
-            content,
-            timestamp: now,
-            auto: true,
-          },
-        ]);
+        setVersions((prev) => {
+          // Skip if content hasn't changed from last auto-save
+          const lastVersion = prev.length > 0 ? prev[prev.length - 1] : null;
+          if (lastVersion && lastVersion.content === content) return prev;
+          return [
+            ...prev,
+            {
+              id: `auto-${now}`,
+              label: "Auto-save",
+              content,
+              timestamp: now,
+              auto: true,
+            },
+          ];
+        });
       }
     }, 30000);
 
@@ -299,13 +319,19 @@ export default function EditorPage() {
         "pv-research": "PV Research Paper",
         "technical-report": "Technical Report",
         "conference-paper": "Conference Paper",
-        "thesis-chapter": "Thesis Chapter",
+        "ieee-journal": "IEEE Journal Paper",
+        "elsevier-journal": "Elsevier Journal",
+        "springer-nature": "Springer Nature",
+        "mdpi-journal": "MDPI Journal",
+        "thesis-chapter": "Thesis / Dissertation",
         "lab-report": "Lab Report",
         "patent-draft": "Patent Draft",
-        "review-article": "Review Article",
+        "review-article": "Literature Review",
         "iec-test-report": "IEC Test Report",
         "fmea-report": "FMEA Report",
-        "energy-yield": "Energy Yield Assessment",
+        "energy-yield": "Energy Yield Analysis",
+        "pv-datasheet": "PV Module Datasheet",
+        "technical-note": "Technical Note",
       };
       setProject({
         id: `proj-${Date.now()}`,
@@ -671,11 +697,14 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:6p
     { key: "files", label: "Files", icon: "📁" },
     { key: "outline", label: "Outline", icon: "📑" },
     { key: "refs", label: "Refs", icon: "📚" },
+    { key: "comments", label: "Comments", icon: "💬" },
+    { key: "quality", label: "Quality", icon: "📊" },
     { key: "history", label: "History", icon: "🕒" },
     { key: "rag", label: "KB", icon: "🧠" },
   ];
 
   // Keyboard shortcuts
+  // biome-ignore lint/correctness/useExhaustiveDependencies: selectedText used in closure for inline AI
   useEffect(() => {
     const handleKeyboard = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "b") {
@@ -689,6 +718,14 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:6p
       if ((e.metaKey || e.ctrlKey) && e.key === "\\") {
         e.preventDefault();
         setSidebarOpen((v) => !v);
+      }
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === "j") {
+        e.preventDefault();
+        // Inline AI on selection
+        if (selectedText) {
+          setInlineAIPos({ x: window.innerWidth / 2 - 150, y: window.innerHeight / 3 });
+        }
+        return;
       }
       if ((e.metaKey || e.ctrlKey) && e.key === "j") {
         e.preventDefault();
@@ -806,6 +843,32 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:6p
             title="AI Assistant (Ctrl+J)"
           >
             AI
+          </button>
+          <button
+            type="button"
+            onClick={() => setCitationSearchOpen(true)}
+            className={`text-xs px-2 py-1 rounded transition-colors ${
+              settings.theme === "light"
+                ? "text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+                : "text-gray-500 hover:text-gray-300 hover:bg-gray-800"
+            }`}
+            title="Search academic literature"
+          >
+            Cite
+          </button>
+          <button
+            type="button"
+            onClick={() => setTwoColumnPreview(!twoColumnPreview)}
+            className={`text-xs px-2 py-1 rounded transition-colors ${
+              twoColumnPreview
+                ? "bg-amber-500/15 text-amber-400"
+                : settings.theme === "light"
+                  ? "text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+                  : "text-gray-500 hover:text-gray-300 hover:bg-gray-800"
+            }`}
+            title="Two-column preview (IEEE style)"
+          >
+            2-Col
           </button>
           <div
             className={`w-px h-4 mx-1 ${
@@ -937,13 +1000,35 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:6p
                     citationFormat={settings.citationFormat}
                   />
                 )}
-                {sidebarTab === "outline" && <OutlinePanel content={content} mode={project.mode} />}
+                {sidebarTab === "outline" && (
+                  <OutlinePanel
+                    content={content}
+                    mode={project.mode}
+                    onNavigate={(line) => {
+                      // Navigate to line in editor - scroll to position
+                      setCursorPos({ line, col: 1 });
+                    }}
+                  />
+                )}
                 {sidebarTab === "history" && (
                   <VersionHistory
                     versions={versions}
                     currentContent={content}
                     onRestore={handleRestore}
                     onSaveManual={handleSaveManual}
+                  />
+                )}
+                {sidebarTab === "comments" && (
+                  <CommentsPanel
+                    comments={comments}
+                    onCommentsChange={setComments}
+                    selectedText={selectedText || undefined}
+                  />
+                )}
+                {sidebarTab === "quality" && (
+                  <WritingQuality
+                    content={content}
+                    wordCountGoal={settings.wordCountGoal || undefined}
                   />
                 )}
                 {sidebarTab === "rag" && (
@@ -1050,7 +1135,7 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:6p
 
             {/* Right pane (Preview) */}
             <div className="min-h-0 flex flex-col" style={{ width: `${100 - splitPos}%` }}>
-              <PreviewPanel content={content} mode={project.mode} />
+              <PreviewPanel content={content} mode={project.mode} twoColumn={twoColumnPreview} />
             </div>
           </div>
 
@@ -1159,6 +1244,47 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:6p
         onClose={() => setImportOpen(false)}
         onImport={handleImport}
         onImportBibtex={handleImportBibtex}
+      />
+
+      <CitationSearch
+        isOpen={citationSearchOpen}
+        onClose={() => setCitationSearchOpen(false)}
+        onAddReference={(ref) => setReferences((prev) => [...prev, ref])}
+        onInsertCitation={(key) => {
+          const citation = project.mode === "latex" ? `\\cite{${key}}` : `[@${key}]`;
+          handleContentChange(content + citation);
+        }}
+        existingKeys={new Set(references.map((r) => r.key))}
+      />
+
+      <InlineAIMenu
+        selectedText={selectedText}
+        position={inlineAIPos}
+        onClose={() => setInlineAIPos(null)}
+        onApply={(replacement) => {
+          if (selectedText) {
+            handleContentChange(content.replace(selectedText, replacement));
+          }
+        }}
+        settings={{
+          anthropicKey: settings.anthropicKey,
+          openaiKey: settings.openaiKey,
+        }}
+      />
+
+      <FloatingAIChat
+        documentContent={content}
+        selectedText={selectedText || undefined}
+        onInsertText={handleInsertText}
+        onReplaceSelection={
+          selectedText
+            ? (text: string) => handleContentChange(content.replace(selectedText, text))
+            : undefined
+        }
+        settings={{
+          anthropicKey: settings.anthropicKey,
+          openaiKey: settings.openaiKey,
+        }}
       />
     </div>
   );

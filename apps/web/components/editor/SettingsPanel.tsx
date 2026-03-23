@@ -59,9 +59,12 @@ const FONT_FAMILIES = [
 ];
 
 const AI_MODELS = [
-  { value: "auto", label: "Auto (Anthropic > OpenAI)" },
-  { value: "claude", label: "Claude (Anthropic)" },
-  { value: "gpt4", label: "GPT-4 (OpenAI)" },
+  { value: "auto", label: "Auto (Anthropic > OpenAI > Perplexity)" },
+  { value: "claude-sonnet-4-20250514", label: "Claude Sonnet 4" },
+  { value: "claude-opus-4-20250514", label: "Claude Opus 4" },
+  { value: "claude-3-5-haiku-20241022", label: "Claude 3.5 Haiku" },
+  { value: "gpt-4o", label: "GPT-4o (OpenAI)" },
+  { value: "sonar-pro", label: "Sonar Pro (Perplexity)" },
 ];
 
 export default function SettingsPanel({
@@ -236,8 +239,15 @@ export default function SettingsPanel({
                 </div>
 
                 <h3 className="text-sm font-semibold text-amber-400 mb-1">API Keys</h3>
-                <p className="text-xs text-gray-500 mb-3">
+                <p className="text-xs text-gray-500 mb-1">
                   Keys are stored in your browser&apos;s localStorage. Never sent to our servers.
+                </p>
+                <p className="text-xs text-gray-500 mb-3">
+                  For full provider management, connection testing, and smart routing, visit{" "}
+                  <a href="/settings" className="text-amber-400 hover:text-amber-300 underline">
+                    Settings
+                  </a>
+                  .
                 </p>
 
                 <div>

@@ -9,6 +9,7 @@ interface CitationSearchProps {
   onAddReference: (ref: Reference) => void;
   onInsertCitation: (key: string) => void;
   existingKeys: Set<string>;
+  perplexityKey?: string;
 }
 
 interface SearchResult {
@@ -23,7 +24,7 @@ interface SearchResult {
   url: string;
 }
 
-type SearchSource = "crossref" | "semanticscholar" | "openalex";
+type SearchSource = "crossref" | "semanticscholar" | "openalex" | "perplexity";
 type CitationStyle = "APA" | "IEEE" | "Chicago" | "MLA" | "Harvard";
 
 function generateKey(title: string, year: string): string {
@@ -139,6 +140,7 @@ export default function CitationSearch({
   onAddReference,
   onInsertCitation,
   existingKeys,
+  perplexityKey,
 }: CitationSearchProps) {
   const [query, setQuery] = useState("");
   const [source, setSource] = useState<SearchSource>("semanticscholar");
@@ -148,23 +150,51 @@ export default function CitationSearch({
   const [citationStyle, setCitationStyle] = useState<CitationStyle>("APA");
   const [expandedAbstract, setExpandedAbstract] = useState<string | null>(null);
 
+  const fetchPerplexity = useCallback(
+    async (q: string): Promise<SearchResult[]> => {
+      const hdrs: Record<string, string> = { "Content-Type": "application/json" };
+      if (perplexityKey) hdrs["x-perplexity-key"] = perplexityKey;
+      const res = await fetch("/api/references/search", {
+        method: "POST",
+        headers: hdrs,
+        body: JSON.stringify({ query: q, source: "perplexity" }),
+      });
+      if (!res.ok) return [];
+      const data = await res.json();
+      return (data.results || []).map((p: Record<string, unknown>) => ({
+        paperId: (p.doi as string) || `pplx-${Date.now()}-${Math.random()}`,
+        title: (p.title as string) || "",
+        authors: (p.authors as string) || "",
+        year: String(p.year || ""),
+        journal: (p.journal as string) || "",
+        doi: (p.doi as string) || "",
+        citationCount: (p.citations as number) || 0,
+        abstract: (p.abstract as string) || "",
+        url: p.doi ? `https://doi.org/${p.doi}` : "",
+      }));
+    },
+    [perplexityKey],
+  );
+
   const searchPapers = useCallback(async () => {
     if (!query.trim()) return;
     setIsSearching(true);
     setResults([]);
-
     try {
-      const { url, parser } = buildSearchRequest(source, query, yearFilter);
-      const res = await fetch(url);
-      const papers = res.ok ? parser(await res.json()) : [];
-      setResults(papers);
+      if (source === "perplexity") {
+        setResults(await fetchPerplexity(query));
+      } else {
+        const { url, parser } = buildSearchRequest(source, query, yearFilter);
+        const res = await fetch(url);
+        setResults(res.ok ? parser(await res.json()) : []);
+      }
     } catch (err) {
       console.error("Search failed:", err);
       setResults([]);
     } finally {
       setIsSearching(false);
     }
-  }, [query, source, yearFilter]);
+  }, [query, source, yearFilter, fetchPerplexity]);
 
   const addAndCite = useCallback(
     (result: SearchResult) => {
@@ -197,7 +227,7 @@ export default function CitationSearch({
           <div>
             <h2 className="text-lg font-semibold text-white">Literature Search</h2>
             <p className="text-xs text-gray-500 mt-0.5">
-              Search academic papers across CrossRef, Semantic Scholar, and OpenAlex
+              Search academic papers across CrossRef, Semantic Scholar, OpenAlex, and Perplexity AI
             </p>
           </div>
           <button
@@ -240,6 +270,9 @@ export default function CitationSearch({
                     { key: "semanticscholar", label: "Semantic Scholar" },
                     { key: "crossref", label: "CrossRef" },
                     { key: "openalex", label: "OpenAlex" },
+                    ...(perplexityKey
+                      ? [{ key: "perplexity" as const, label: "Perplexity AI" }]
+                      : []),
                   ] as const
                 ).map((s) => (
                   <button

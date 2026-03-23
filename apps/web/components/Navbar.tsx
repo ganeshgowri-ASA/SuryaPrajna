@@ -1,8 +1,8 @@
 "use client";
 
+import clsx from "clsx";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import clsx from "clsx";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -11,6 +11,7 @@ const navLinks = [
   { href: "/workspace", label: "Workspace" },
   { href: "/editor", label: "Editor" },
   { href: "/docs", label: "Docs" },
+  { href: "/settings", label: "Settings" },
 ];
 
 export default function Navbar() {
@@ -25,9 +26,7 @@ export default function Navbar() {
           <span className="font-bold text-white group-hover:text-amber-400 transition-colors">
             SuryaPrajna
           </span>
-          <span className="hidden sm:block text-xs text-gray-600 font-mono mt-0.5">
-            सूर्यप्रज्ञा
-          </span>
+          <span className="hidden sm:block text-xs text-gray-600 font-mono mt-0.5">सूर्यप्रज्ञा</span>
         </Link>
 
         {/* Nav links */}
@@ -40,7 +39,7 @@ export default function Navbar() {
                 "px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
                 pathname === link.href
                   ? "bg-amber-500/10 text-amber-400"
-                  : "text-gray-400 hover:text-gray-200 hover:bg-gray-800/60"
+                  : "text-gray-400 hover:text-gray-200 hover:bg-gray-800/60",
               )}
             >
               {link.label}

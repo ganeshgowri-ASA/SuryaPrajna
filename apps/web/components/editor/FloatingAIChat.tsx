@@ -20,6 +20,7 @@ interface FloatingAIChatProps {
   settings: {
     anthropicKey: string;
     openaiKey: string;
+    perplexityKey?: string;
   };
 }
 
@@ -83,7 +84,7 @@ export default function FloatingAIChat({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  const hasKey = !!(settings.anthropicKey || settings.openaiKey);
+  const hasKey = !!(settings.anthropicKey || settings.openaiKey || settings.perplexityKey);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: scroll on new messages
   useEffect(() => {
@@ -117,6 +118,7 @@ export default function FloatingAIChat({
             "Content-Type": "application/json",
             "x-anthropic-key": settings.anthropicKey,
             "x-openai-key": settings.openaiKey,
+            "x-perplexity-key": settings.perplexityKey || "",
           },
           body: JSON.stringify({
             messages: [

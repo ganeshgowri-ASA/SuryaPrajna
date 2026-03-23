@@ -10,6 +10,7 @@ interface InlineAIMenuProps {
   settings: {
     anthropicKey: string;
     openaiKey: string;
+    perplexityKey?: string;
   };
 }
 
@@ -64,7 +65,7 @@ export default function InlineAIMenu({
   const [result, setResult] = useState<string | null>(null);
   const [activeAction, setActiveAction] = useState<string | null>(null);
 
-  const hasKey = !!(settings.anthropicKey || settings.openaiKey);
+  const hasKey = !!(settings.anthropicKey || settings.openaiKey || settings.perplexityKey);
 
   const executeAction = useCallback(
     async (action: (typeof INLINE_ACTIONS)[number]) => {
@@ -81,6 +82,7 @@ export default function InlineAIMenu({
             "Content-Type": "application/json",
             "x-anthropic-key": settings.anthropicKey,
             "x-openai-key": settings.openaiKey,
+            "x-perplexity-key": settings.perplexityKey || "",
           },
           body: JSON.stringify({
             messages: [

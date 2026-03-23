@@ -169,6 +169,7 @@ function markdownToDocxHtml(md: string): string {
   return html;
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: large editor component with many interactive features
 export default function EditorPage() {
   // Core state
   const [project, setProject] = useState<Project>(() =>
@@ -571,6 +572,7 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:6p
 
   // Format action from toolbar
   const handleFormat = useCallback(
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: formatting needs many branches
     (action: string, value?: string) => {
       const formatMap: Record<string, { prefix: string; suffix: string; block?: boolean }> = {
         bold: { prefix: "**", suffix: "**" },
@@ -642,6 +644,7 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:6p
 
   // Drag handlers for resizable panels
   const handleMouseMove = useCallback(
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: drag logic with panel boundaries
     (e: MouseEvent) => {
       if (!containerRef.current) return;
       const rect = containerRef.current.getBoundingClientRect();
@@ -706,6 +709,7 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:6p
   // Keyboard shortcuts
   // biome-ignore lint/correctness/useExhaustiveDependencies: selectedText used in closure for inline AI
   useEffect(() => {
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: keyboard shortcuts require many branches
     const handleKeyboard = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "b") {
         e.preventDefault();
@@ -1255,6 +1259,7 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:6p
           handleContentChange(content + citation);
         }}
         existingKeys={new Set(references.map((r) => r.key))}
+        perplexityKey={settings.perplexityKey}
       />
 
       <InlineAIMenu

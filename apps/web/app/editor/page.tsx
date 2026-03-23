@@ -35,6 +35,7 @@ import {
   structurePdfText,
   textToImportResult,
 } from "@/lib/converters";
+import { useProviderKeys } from "@/lib/useProviderKeys";
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -226,8 +227,8 @@ export default function EditorPage() {
   const charCount = content.length;
   const lineCount = content.split("\n").length;
 
-  // Has AI key
-  const hasAIKey = !!(settings.anthropicKey || settings.openaiKey);
+  // Has AI key — use the shared provider-keys store (not the legacy settings fields)
+  const { hasKey: hasAIKey } = useProviderKeys();
 
   // Persist to localStorage
   useEffect(() => {
@@ -629,15 +630,21 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:6p
     [content, handleContentChange, selectedText],
   );
 
-  // AI action from toolbar
+  // AI action from toolbar — open the AI panel and switch to AI view
   const handleAIAction = useCallback(
     (action: string) => {
       if (!hasAIKey) {
         setSettingsOpen(true);
         return;
       }
+      // Open AI panel + switch right panel to show AI assistant
       setAiPanelOpen(true);
-      // The AI panel will handle the actual action via its slash commands
+      setRightPanelMode("ai");
+
+      // Map toolbar actions to AI-specific behaviors
+      if (action === "ai-literature") {
+        setCitationSearchOpen(true);
+      }
     },
     [hasAIKey],
   );
@@ -1002,6 +1009,9 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:6p
                     onInsertCitation={handleInsertCitation}
                     mode={project.mode}
                     citationFormat={settings.citationFormat}
+                    onCitationFormatChange={(fmt) =>
+                      setSettings((s) => ({ ...s, citationFormat: fmt }))
+                    }
                   />
                 )}
                 {sidebarTab === "outline" && (

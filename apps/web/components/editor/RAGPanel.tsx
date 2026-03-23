@@ -1,7 +1,7 @@
 "use client";
 
 import { useProviderKeys } from "@/lib/useProviderKeys";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
 interface RAGPanelProps {
   onInsertText: (text: string) => void;
@@ -18,6 +18,8 @@ interface SearchResult {
   };
 }
 
+const ACCEPTED_DOC_TYPES = ".pdf,.docx,.txt,.md,.tex";
+
 export default function RAGPanel({ onInsertText }: RAGPanelProps) {
   const { keys, headers } = useProviderKeys();
   const [query, setQuery] = useState("");
@@ -28,6 +30,7 @@ export default function RAGPanel({ onInsertText }: RAGPanelProps) {
   const [uploadTitle, setUploadTitle] = useState("");
   const [uploading, setUploading] = useState(false);
   const [tab, setTab] = useState<"search" | "upload">("search");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isConfigured = keys.pineconeKey && keys.pineconeIndex && keys.openaiKey;
 
@@ -59,49 +62,98 @@ export default function RAGPanel({ onInsertText }: RAGPanelProps) {
     }
   }, [query, headers, isConfigured]);
 
-  const handleUpload = useCallback(async () => {
-    if (!uploadText.trim() || !isConfigured) return;
-    setUploading(true);
-    setError("");
+  const doUpload = useCallback(
+    async (text: string, title: string) => {
+      if (!text.trim() || !isConfigured) return;
+      setUploading(true);
+      setError("");
 
-    try {
-      // Split text into chunks of ~500 words
-      const words = uploadText.split(/\s+/);
-      const chunks: string[] = [];
-      for (let i = 0; i < words.length; i += 500) {
-        chunks.push(words.slice(i, i + 500).join(" "));
+      try {
+        const words = text.split(/\s+/);
+        const chunks: string[] = [];
+        for (let i = 0; i < words.length; i += 500) {
+          chunks.push(words.slice(i, i + 500).join(" "));
+        }
+
+        const metadata = chunks.map(() => ({
+          title: title || "Untitled",
+          source: "manual_upload",
+          uploadedAt: new Date().toISOString(),
+        }));
+
+        const res = await fetch("/api/pinecone/upload", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...headers,
+          },
+          body: JSON.stringify({ texts: chunks, metadata }),
+        });
+
+        const data = await res.json();
+        if (data.error) {
+          setError(data.error);
+        } else {
+          setUploadText("");
+          setUploadTitle("");
+          setError("");
+          alert(`Uploaded ${data.upsertedCount} chunks to knowledge base`);
+        }
+      } catch {
+        setError("Failed to upload to knowledge base");
+      } finally {
+        setUploading(false);
       }
+    },
+    [headers, isConfigured],
+  );
 
-      const metadata = chunks.map(() => ({
-        title: uploadTitle || "Untitled",
-        source: "manual_upload",
-        uploadedAt: new Date().toISOString(),
-      }));
+  const handleUpload = useCallback(() => {
+    doUpload(uploadText, uploadTitle);
+  }, [doUpload, uploadText, uploadTitle]);
 
-      const res = await fetch("/api/pinecone/upload", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...headers,
-        },
-        body: JSON.stringify({ texts: chunks, metadata }),
-      });
+  const handleFileUpload = useCallback(
+    async (files: FileList | null) => {
+      if (!files || files.length === 0) return;
+      const file = files[0];
+      const ext = file.name.split(".").pop()?.toLowerCase();
+      const textExts = new Set(["txt", "md", "tex"]);
 
-      const data = await res.json();
-      if (data.error) {
-        setError(data.error);
-      } else {
-        setUploadText("");
-        setUploadTitle("");
+      if (textExts.has(ext || "")) {
+        const text = await file.text();
+        doUpload(text, file.name);
+      } else if (ext === "pdf" || ext === "docx") {
+        // Use the server convert endpoint
+        setUploading(true);
         setError("");
-        alert(`Uploaded ${data.upsertedCount} chunks to knowledge base`);
+        try {
+          const formData = new FormData();
+          formData.append("file", file);
+          formData.append("format", ext);
+          const convertRes = await fetch("/api/convert", { method: "POST", body: formData });
+          if (!convertRes.ok) {
+            const errData = await convertRes.json();
+            setError(errData.error || "Conversion failed");
+            return;
+          }
+          const convertData = await convertRes.json();
+          const text = convertData.markdown || convertData.text || "";
+          if (text) {
+            await doUpload(text, file.name);
+          } else {
+            setError("No text extracted from file");
+          }
+        } catch {
+          setError("Failed to process file for upload");
+        } finally {
+          setUploading(false);
+        }
+      } else {
+        setError(`Unsupported file type: .${ext}`);
       }
-    } catch {
-      setError("Failed to upload to knowledge base");
-    } finally {
-      setUploading(false);
-    }
-  }, [uploadText, uploadTitle, headers, isConfigured]);
+    },
+    [doUpload],
+  );
 
   if (!isConfigured) {
     return (
@@ -112,10 +164,13 @@ export default function RAGPanel({ onInsertText }: RAGPanelProps) {
         <div className="flex-1 flex items-center justify-center p-4">
           <div className="text-center">
             <p className="text-sm text-gray-400 mb-2">Knowledge Base Not Configured</p>
-            <p className="text-xs text-gray-600">
+            <p className="text-xs text-gray-600 mb-3">
               Add your Pinecone API key, index name, and OpenAI key in Settings to enable semantic
               search over your documents.
             </p>
+            <a href="/settings" className="text-xs text-amber-400 hover:text-amber-300">
+              Go to Settings
+            </a>
           </div>
         </div>
       </div>
@@ -127,6 +182,10 @@ export default function RAGPanel({ onInsertText }: RAGPanelProps) {
       <div className="px-3 py-2 border-b border-gray-800/60 flex-shrink-0">
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs font-semibold text-white">Knowledge Base (RAG)</span>
+          <span className="text-xs text-emerald-400 flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            Connected
+          </span>
         </div>
         <div className="flex gap-1">
           <button
@@ -230,16 +289,38 @@ export default function RAGPanel({ onInsertText }: RAGPanelProps) {
             className="input text-xs resize-none flex-1 min-h-[100px]"
           />
           {error && <p className="text-xs text-red-400">{error}</p>}
-          <button
-            type="button"
-            onClick={handleUpload}
-            disabled={uploading || !uploadText.trim()}
-            className="btn-primary text-xs py-1.5 disabled:opacity-50"
-          >
-            {uploading ? "Uploading..." : "Upload to Knowledge Base"}
-          </button>
+          <div className="flex gap-1.5">
+            <button
+              type="button"
+              onClick={handleUpload}
+              disabled={uploading || !uploadText.trim()}
+              className="btn-primary text-xs py-1.5 flex-1 disabled:opacity-50"
+            >
+              {uploading ? "Uploading..." : "Upload Text"}
+            </button>
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="btn-primary text-xs py-1.5 px-3 bg-gray-700 hover:bg-gray-600 disabled:opacity-50"
+              title="Upload .pdf, .docx, .txt, .md, .tex"
+            >
+              📁 File
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept={ACCEPTED_DOC_TYPES}
+              className="hidden"
+              onChange={(e) => {
+                handleFileUpload(e.target.files);
+                e.target.value = "";
+              }}
+            />
+          </div>
           <p className="text-xs text-gray-600">
-            Text will be chunked and embedded for semantic search.
+            Text will be chunked and embedded for semantic search. Upload files (.pdf, .docx, .txt,
+            .md, .tex) or paste text directly.
           </p>
         </div>
       )}

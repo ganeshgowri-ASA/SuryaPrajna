@@ -126,7 +126,6 @@ export default function PreviewPanel({ content, mode, twoColumn }: PreviewPanelP
 
   return (
     <div className="h-full overflow-auto">
-      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" />
       {/* Preview controls */}
       <div className="sticky top-0 z-10 flex items-center gap-2 px-4 py-1.5 bg-gray-950/95 border-b border-gray-800/40 backdrop-blur-sm">
         <span className="text-xs text-gray-500">Preview</span>

@@ -5,6 +5,7 @@ import CitationSearch from "@/components/editor/CitationSearch";
 import type { CodeMirrorEditorHandle } from "@/components/editor/CodeMirrorEditor";
 import CommentsPanel, { type Comment } from "@/components/editor/CommentsPanel";
 import EditorToolbar from "@/components/editor/EditorToolbar";
+import EquationOCR from "@/components/editor/EquationOCR";
 import FigureTools from "@/components/editor/FigureTools";
 import FloatingAIChat from "@/components/editor/FloatingAIChat";
 import ImportDialog from "@/components/editor/ImportDialog";
@@ -244,7 +245,8 @@ export default function EditorPage() {
   const [comments, setComments] = useState<Comment[]>(() =>
     loadFromStorage("sp-editor-comments", []),
   );
-  const [citationSearchOpen, setCitationSearchOpen] = useState(false);
+  const [citationSearchOpen, setcitationSearchOpen] = useState(false);
+  const [showEquationOCR, setShowEquationOCR] = useState(false);
   const [inlineAIPos, setInlineAIPos] = useState<{ x: number; y: number } | null>(null);
   const [twoColumnPreview, setTwoColumnPreview] = useState(false);
   const [isDragOverEditor, setIsDragOverEditor] = useState(false);
@@ -1078,6 +1080,7 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:6p
         mode={project.mode}
         onAIAction={handleAIAction}
         hasAIKey={hasAIKey}
+            onEquationOCR={() => setShowEquationOCR(true)}
       />
 
       {/* Main area */}
@@ -1381,7 +1384,12 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:6p
         existingKeys={new Set(references.map((r) => r.key))}
       />
 
-      <InlineAIMenu
+      <EquationOCR
+          isOpen={showEquationOCR}
+          onClose={() => setShowEquationOCR(false)}
+          onInsert={insertAtCursor}
+        />
+        <InlineAIMenu
         selectedText={selectedText}
         position={inlineAIPos}
         onClose={() => setInlineAIPos(null)}

@@ -245,7 +245,7 @@ export default function EditorPage() {
   const [comments, setComments] = useState<Comment[]>(() =>
     loadFromStorage("sp-editor-comments", []),
   );
-  const [citationSearchOpen, setcitationSearchOpen] = useState(false);
+  const [citationSearchOpen, setCitationSearchOpen] = useState(false);
   const [showEquationOCR, setShowEquationOCR] = useState(false);
   const [inlineAIPos, setInlineAIPos] = useState<{ x: number; y: number } | null>(null);
   const [twoColumnPreview, setTwoColumnPreview] = useState(false);

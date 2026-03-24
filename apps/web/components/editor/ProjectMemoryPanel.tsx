@@ -23,11 +23,12 @@ export default function ProjectMemoryPanel({
 
   useEffect(() => {
     if (projectId) {
-      const p = store.getProject(projectId);
-      if (p) {
-        setProject(p);
-        setName(p.name);
-        setInstructions(p.customInstructions);
+      const all = store.listProjects();
+      const found = all.find((p) => p.id === projectId);
+      if (found) {
+        setProject(found);
+        setName(found.name);
+        setInstructions(found.customInstructions);
       }
     } else {
       const active = store.getActiveProject();
@@ -41,19 +42,19 @@ export default function ProjectMemoryPanel({
 
   const handleSave = useCallback(() => {
     if (!project) return;
-    store.updateProject(project.id, {
-      name,
-      customInstructions: instructions,
-    });
-    const updated = store.getProject(project.id);
+    store.updateCustomInstructions(project.id, instructions);
+    // Refresh project state
+    const all = store.listProjects();
+    const updated = all.find((p) => p.id === project.id);
     if (updated) setProject(updated);
-  }, [project, name, instructions, store]);
+  }, [project, instructions, store]);
 
   const handlePrefChange = useCallback(
     (key: keyof ProjectPreferences, value: string | boolean | number) => {
       if (!project) return;
       store.updatePreferences(project.id, { [key]: value });
-      const updated = store.getProject(project.id);
+      const all = store.listProjects();
+      const updated = all.find((p) => p.id === project.id);
       if (updated) {
         setProject(updated);
         onPreferencesChange?.(updated.preferences);
@@ -97,8 +98,8 @@ export default function ProjectMemoryPanel({
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          onBlur={handleSave}
           className="w-full bg-gray-900 border border-gray-700 rounded px-2 py-1 text-sm text-gray-200 focus:outline-none focus:border-amber-500"
+          readOnly
         />
       </div>
 

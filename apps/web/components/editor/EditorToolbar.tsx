@@ -8,6 +8,7 @@ interface EditorToolbarProps {
   onAIAction: (action: string) => void;
   hasAIKey: boolean;
   onEquationOCR?: () => void;
+    onClaimReview?: () => void;
 }
 
 interface ToolbarButton {
@@ -58,6 +59,7 @@ export default function EditorToolbar({
   onAIAction,
   hasAIKey,
   onEquationOCR,
+    onClaimReview,
 }: EditorToolbarProps) {
   const handleFormat = useCallback(
     (action: string, value?: string) => {
@@ -101,6 +103,20 @@ export default function EditorToolbar({
             title="Scan equation from image (MathPix OCR)"
           >
             OCR
+          </button>
+        </>
+      )}
+            {/* Claim Review button */}
+      {onClaimReview && (
+        <>
+          <div className="w-px h-4 bg-gray-700 mx-1" />
+          <button
+            type="button"
+            onClick={onClaimReview}
+            className="px-1.5 py-1 text-xs text-emerald-400/80 hover:text-emerald-300 hover:bg-emerald-500/10 rounded transition-colors whitespace-nowrap"
+            title="Claim Confidence Review (Ctrl+Shift+R)"
+          >
+            Review
           </button>
         </>
       )}

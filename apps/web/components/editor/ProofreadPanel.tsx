@@ -111,7 +111,7 @@ export default function ProofreadPanel({ content, onClose }: ProofreadPanelProps
   }) ?? [];
 
   const categories = result
-    ? ([...new Set(result.issues.map(i => i.category))] as IssueCategory[])
+    ? (Array.from(new Set(result.issues.map(i => i.category))) as IssueCategory[])
     : [];
 
   return (

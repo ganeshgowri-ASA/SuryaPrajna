@@ -1446,7 +1446,6 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:6p
         onInsertText={insertAtCursor}
         onReplaceSelection={selectedText ? replaceSelection : undefined}
       />
-    </div>
           {showProofreadPanel && (
         <div className="fixed inset-y-0 right-0 z-50 shadow-2xl flex">
           <ProofreadPanel
@@ -1455,5 +1454,6 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:6p
           />
         </div>
       )}
+          </div>
   );
 }

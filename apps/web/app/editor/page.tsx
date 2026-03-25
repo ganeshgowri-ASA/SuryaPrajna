@@ -7,6 +7,7 @@ import CommentsPanel, { type Comment } from "@/components/editor/CommentsPanel";
 import EditorToolbar from "@/components/editor/EditorToolbar";
 import EquationOCR from "@/components/editor/EquationOCR";
 import ClaimConfidencePanel from "@/components/editor/ClaimConfidencePanel";
+import ProofreadPanel from "@/components/editor/ProofreadPanel";
 import FigureTools from "@/components/editor/FigureTools";
 import FloatingAIChat from "@/components/editor/FloatingAIChat";
 import ImportDialog from "@/components/editor/ImportDialog";
@@ -250,6 +251,7 @@ export default function EditorPage() {
   const [citationSearchOpen, setCitationSearchOpen] = useState(false);
   const [showEquationOCR, setShowEquationOCR] = useState(false);
     const [showClaimReview, setShowClaimReview] = useState(false);
+    const [showProofreadPanel, setShowProofreadPanel] = useState(false);
   const [inlineAIPos, setInlineAIPos] = useState<{ x: number; y: number } | null>(null);
   const [twoColumnPreview, setTwoColumnPreview] = useState(false);
   const [isDragOverEditor, setIsDragOverEditor] = useState(false);
@@ -890,6 +892,10 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:6p
         e.preventDefault();
         setShowClaimReview((v) => !v);
       }
+              if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === "p") {
+          e.preventDefault();
+          setShowProofreadPanel((v) => !v);
+        }
     };
     window.addEventListener("keydown", handleKeyboard);
     return () => window.removeEventListener("keydown", handleKeyboard);
@@ -1441,5 +1447,13 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:6p
         onReplaceSelection={selectedText ? replaceSelection : undefined}
       />
     </div>
+          {showProofreadPanel && (
+        <div className="fixed inset-y-0 right-0 z-50 shadow-2xl flex">
+          <ProofreadPanel
+            content={content}
+            onClose={() => setShowProofreadPanel(false)}
+          />
+        </div>
+      )}
   );
 }

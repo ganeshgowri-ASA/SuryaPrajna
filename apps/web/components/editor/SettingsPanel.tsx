@@ -53,6 +53,8 @@ const DEFAULT_SETTINGS: EditorSettings = {
 
 export { DEFAULT_SETTINGS };
 
+const FONT_FAMILIES = [
+
 
   { value: "JetBrains Mono", label: "JetBrains Mono" },
   { value: "Fira Code", label: "Fira Code" },

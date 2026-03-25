@@ -14,6 +14,7 @@ export interface Reference {
   volume?: string;
   pages?: string;
   publisher?: string;
+    bibtex?: string;
 }
 
 interface ReferenceManagerProps {

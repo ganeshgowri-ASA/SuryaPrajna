@@ -6,6 +6,7 @@ import type { CodeMirrorEditorHandle } from "@/components/editor/CodeMirrorEdito
 import CommentsPanel, { type Comment } from "@/components/editor/CommentsPanel";
 import EditorToolbar from "@/components/editor/EditorToolbar";
 import EquationOCR from "@/components/editor/EquationOCR";
+import ClaimConfidencePanel from "@/components/editor/ClaimConfidencePanel";
 import FigureTools from "@/components/editor/FigureTools";
 import FloatingAIChat from "@/components/editor/FloatingAIChat";
 import ImportDialog from "@/components/editor/ImportDialog";
@@ -248,6 +249,7 @@ export default function EditorPage() {
   );
   const [citationSearchOpen, setCitationSearchOpen] = useState(false);
   const [showEquationOCR, setShowEquationOCR] = useState(false);
+    const [showClaimReview, setShowClaimReview] = useState(false);
   const [inlineAIPos, setInlineAIPos] = useState<{ x: number; y: number } | null>(null);
   const [twoColumnPreview, setTwoColumnPreview] = useState(false);
   const [isDragOverEditor, setIsDragOverEditor] = useState(false);
@@ -884,6 +886,10 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:6p
         e.preventDefault();
         setShowEquationOCR(true);
       }
+            if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === "r") {
+        e.preventDefault();
+        setShowClaimReview((v) => !v);
+      }
     };
     window.addEventListener("keydown", handleKeyboard);
     return () => window.removeEventListener("keydown", handleKeyboard);
@@ -1094,6 +1100,7 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:6p
         onAIAction={handleAIAction}
         hasAIKey={hasAIKey}
             onEquationOCR={() => setShowEquationOCR(true)}
+                      onClaimReview={() => setShowClaimReview((v) => !v)}
       />
 
       {/* Main area */}
@@ -1402,6 +1409,16 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:6p
           onClose={() => setShowEquationOCR(false)}
           onInsert={insertAtCursor}
         />
+
+                <ClaimConfidencePanel
+            isOpen={showClaimReview}
+            onClose={() => setShowClaimReview(false)}
+            content={content}
+            bibContent={references.map((r) => r.bibtex || "").join("\n")}
+            apiKey={settings.anthropicKey || settings.openaiKey || ""}
+            aiModel={settings.aiModel}
+            onNavigateToLine={(line) => editorRef.current?.scrollToLine?.(line)}
+          />
               <AIContentGenerator
           isOpen={showAIContentGen}
           onClose={() => setShowAIContentGen(false)}

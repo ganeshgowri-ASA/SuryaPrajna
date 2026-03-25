@@ -10,6 +10,7 @@ import FigureTools from "@/components/editor/FigureTools";
 import FloatingAIChat from "@/components/editor/FloatingAIChat";
 import ImportDialog from "@/components/editor/ImportDialog";
 import InlineAIMenu from "@/components/editor/InlineAIMenu";
+import AIContentGenerator from "@/components/editor/AIContentGenerator";
 import OutlinePanel from "@/components/editor/OutlinePanel";
 import PreviewPanel from "@/components/editor/PreviewPanel";
 import ProblemsPanel from "@/components/editor/ProblemsPanel";
@@ -251,6 +252,7 @@ export default function EditorPage() {
   const [twoColumnPreview, setTwoColumnPreview] = useState(false);
   const [isDragOverEditor, setIsDragOverEditor] = useState(false);
   const [importNotice, setImportNotice] = useState("");
+    const [showAIContentGen, setShowAIContentGen] = useState(false);
 
   const autoSaveTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const lastAutoSave = useRef<number>(Date.now());
@@ -715,6 +717,13 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:6p
         setCitationSearchOpen(true);
         return;
       }
+      
+              // AI Content Generator opens the rich modal
+      if (action === "ai-generate") {
+        setShowAIContentGen(true);
+        return;
+      }
+
 
       const actionConfig = AI_ACTION_PROMPTS[action];
       if (!actionConfig) {
@@ -870,6 +879,10 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:6p
       if ((e.metaKey || e.ctrlKey) && e.key === "j") {
         e.preventDefault();
         setAiPanelOpen((v) => !v);
+      }
+            if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === "e") {
+        e.preventDefault();
+        setShowEquationOCR(true);
       }
     };
     window.addEventListener("keydown", handleKeyboard);
@@ -1388,6 +1401,12 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:6p
           isOpen={showEquationOCR}
           onClose={() => setShowEquationOCR(false)}
           onInsert={insertAtCursor}
+        />
+              <AIContentGenerator
+          isOpen={showAIContentGen}
+          onClose={() => setShowAIContentGen(false)}
+          onInsert={insertAtCursor}
+          apiHeaders={headers}
         />
         <InlineAIMenu
         selectedText={selectedText}

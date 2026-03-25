@@ -49,6 +49,7 @@ const AI_ACTIONS = [
   { label: "Literature", icon: "Lit", action: "ai-literature", title: "Search academic papers" },
   { label: "Explain", icon: "Exp", action: "ai-explain", title: "Explain selection" },
   { label: "Summarize", icon: "Sum", action: "ai-summarize", title: "Summarize section" },
+    { label: "Generate", icon: "Gen", action: "ai-generate", title: "AI Content Generator (Equations, Graphs, Tables)" },
 ];
 
 export default function EditorToolbar({

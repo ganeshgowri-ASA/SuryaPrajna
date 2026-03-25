@@ -38,6 +38,7 @@ export interface CodeMirrorEditorHandle {
   insertAtCursor: (text: string) => void;
   replaceSelection: (text: string) => void;
   getSelectedText: () => string;
+    scrollToLine?: (line: number) => void;
 }
 
 interface CodeMirrorEditorProps {

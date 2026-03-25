@@ -19,6 +19,8 @@ export interface EditorSettings {
   aiModel: string;
   wordCountGoal: number;
   defaultTemplate: string;
+    mathpixAppId: string;
+    mathpixAppKey: string;
 }
 
 interface SettingsPanelProps {
@@ -45,11 +47,13 @@ const DEFAULT_SETTINGS: EditorSettings = {
   aiModel: "auto",
   wordCountGoal: 0,
   defaultTemplate: "pv-research",
+    mathpixAppId: "",
+      mathpixAppKey: "",
 };
 
 export { DEFAULT_SETTINGS };
 
-const FONT_FAMILIES = [
+
   { value: "JetBrains Mono", label: "JetBrains Mono" },
   { value: "Fira Code", label: "Fira Code" },
   { value: "Source Code Pro", label: "Source Code Pro" },
@@ -304,6 +308,21 @@ export default function SettingsPanel({
                 <div className="pt-2 border-t border-gray-800/60">
                   <h3 className="text-sm font-semibold text-amber-400 mb-3">Pinecone (RAG)</h3>
                   <div className="space-y-3">
+
+                                  <div className="pt-2 border-t border-gray-800/60">
+                <h3 className="text-sm font-semibold text-amber-400 mb-3">MathPix (Equation OCR)</h3>
+                <div className="space-y-3">
+                  <div>
+                    <label htmlFor="settings-mathpix-id" className="text-xs text-gray-400 mb-1 block">App ID</label>
+                    <input id="settings-mathpix-id" type="text" value={localSettings.mathpixAppId} onChange={(e) => update("mathpixAppId", e.target.value)} placeholder="my-app-id" className="input text-sm py-1.5" />
+                  </div>
+                  <div>
+                    <label htmlFor="settings-mathpix-key" className="text-xs text-gray-400 mb-1 block">App Key</label>
+                    <input id="settings-mathpix-key" type="password" value={localSettings.mathpixAppKey} onChange={(e) => update("mathpixAppKey", e.target.value)} placeholder="mpa-..." className="input text-sm py-1.5" />
+                  </div>
+                  <p className="text-xs text-gray-600 mt-1">Used for Equation OCR (Ctrl+Shift+E). Get keys at mathpix.com</p>
+                </div>
+              </div>
                     <div>
                       <label
                         htmlFor="settings-pinecone-key"
